@@ -43,3 +43,12 @@
   - Requires minimum sample size $N \ge \text{MIN\_BAND\_SAMPLES}$ (default 48 matched hourly intervals, i.e., 2 prior days).
   - If insufficient history is available, the UI displays *"Insufficient history for an uncertainty range"*.
   - Clearly disclaimed as an empirical residual-based range, not an official Elexon probabilistic forecast.
+
+## 8. Dataset Scope and Reporting Boundaries (WINDFOR vs. FUELHH)
+- **Empirical Observation**: WINDFOR forecasts run systematically ~15.5% (+1,745 MW) above FUELHH actuals in January 2026.
+- **Verified Fact**: B1630 (Transparency Regulation 543/2013 actual/estimated wind generation across GB) is +19.3% (+2,207 MW) higher than FUELHH settlement outturn. WINDFOR day-ahead forecasts match B1630 within -3.18% (-434 MW).
+- **Assumed Domain Explanations**:
+  - FUELHH captures metered transmission-connected BMUs only and reflects outturn post-curtailment.
+  - WINDFOR and B1630 reflect total national wind capability (incorporating distribution-connected/embedded wind and unconstrained output).
+  - The exact unit-level breakdown between embedded wind and curtailment is not disaggregated in the public Elexon API and is treated as an informed domain hypothesis rather than a single monolithic proven cause.
+

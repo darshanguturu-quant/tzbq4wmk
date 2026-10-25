@@ -199,6 +199,31 @@ cd frontend && npm run build
 
 ---
 
+## Forecast Bias Investigation & Findings (+1,745 MW)
+
+Across January 2026, comparing day-ahead `WINDFOR` forecasts against `FUELHH` settlement outturn reveals a systematic positive bias of **+1,745.94 MW** (+15.5%, with 84.7% of all intervals overforecasted). An independent investigation tested four hypotheses and established the following:
+
+### Verified Facts
+1. **Structural Baseline (Not Day-Ahead Uncertainty):** Evaluating the latest pre-delivery forecast (~1.6h lead time) still yields a **+1,471.15 MW bias**. Over 84% of the bias persists into real time.
+2. **Proportional Output Scaling:** The bias scales directly with generation volume (+1,421 MW in low wind up to +2,263 MW in high wind), behaving as an aggregate **1.155x multiplier**.
+3. **Interval Alignment Invariant:** Exact `:00` actuals versus hourly averaged $(:00 + :30)/2$ actuals differ by only **1.95 MW (0.11%)**.
+4. **Official OpenAPI Definitions:**
+   - `WINDFOR` is defined as *"wind generation forecast for wind farms which are visible to the ESO and have operational metering."*
+   - `FUELHH` provides half-hourly aggregated settlement generation outturn from transmission-connected Balancing Mechanism Units (BMUs).
+5. **Empirical Triangulation (Full January 2026, N = 720 common hours):**
+   - Mean `WINDFOR` Day-Ahead Forecast: **13,227.75 MW**
+   - Mean `B1630` National Actuals (Regulation 543/2013): **13,662.13 MW**
+   - Mean `FUELHH` Transmission Outturn Actuals: **11,455.27 MW**
+   - **Crucial Finding:** `WINDFOR` matches national transparency actuals (`B1630`) within **-3.18% (-434 MW)**, whereas `B1630` is **+19.26% (+2,207 MW) higher than `FUELHH`** ($r = 0.9924$).
+
+### Domain Hypotheses vs. Remaining Unknowns
+- **Hypothesis A (Embedded Wind Scope):** `B1630` accounts for modeled embedded (distribution-connected) wind (~12–15% of GB capacity), while `FUELHH` measures only transmission-connected BMUs. If `WINDFOR` reflects national capability, this explains why it aligns with `B1630` rather than `FUELHH`.
+- **Hypothesis B (Transmission Curtailment):** `FUELHH` reflects actual settlement outturn *after* NESO downward curtailment (BOALF instructions to resolve transmission bottlenecks like the Scottish B6 boundary), whereas `WINDFOR` forecasts unconstrained weather potential.
+- **Remaining Unknowns:** Because unit-by-unit BMU mapping inside NESO's proprietary forecast algorithm is not exposed via the public API, the relative contribution between embedded wind and curtailment is an informed domain hypothesis rather than a single monolithic cause.
+*(Full methodology in [docs/methodology.md](docs/methodology.md#4-empirical-investigation--analysis-of-forecast-bias-1745-mw)).*
+
+---
+
 ## Deployment Instructions
 
 ### Option 1: Heroku Container Stack (Recommended)
