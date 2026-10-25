@@ -108,10 +108,7 @@ def run_exploration():
             sub = df_d[df_d["publishTime"] == pt]
             pt_dt = datetime.fromisoformat(pt)
 
-            sub_starts = [
-                datetime.fromisoformat(st)
-                for st in sub["startTime"]
-            ]
+            sub_starts = [datetime.fromisoformat(st) for st in sub["startTime"]]
             min_st = min(sub_starts)
             max_st = max(sub_starts)
             horizon_hours = (max_st - min_st).total_seconds() / 3600.0
