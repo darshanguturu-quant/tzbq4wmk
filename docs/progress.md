@@ -29,4 +29,13 @@
   - Implemented `backend/app/services/data_quality.py` for interval matching audits.
   - Created test suite `backend/tests/test_selection_and_evaluation.py` (12 passing tests, including named test `test_post_cutoff_revision_cannot_enter_backtest`).
 
+## Phase 3: Backend API (Completed)
+- **Actions**:
+  - Implemented Pydantic models in `backend/app/schemas/api_models.py`.
+  - Implemented `/api/*` endpoints in `backend/app/api/endpoints.py` (`/health`, `/metadata`, `/decision-profile`, `/performance`, `/performance/compare`, `/data-quality`, `/export`).
+  - Added strict parameter validation for January 2026 calendar bounds, HH:MM cutoffs, and chronological ranges.
+  - Configured CORS and SPA route fallback serving in `backend/app/main.py`.
+  - Added 11 endpoint integration tests in `backend/tests/test_api_endpoints.py`. All 23 tests pass.
+
+
 
