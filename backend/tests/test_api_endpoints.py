@@ -1,6 +1,6 @@
 """
 Integration and API endpoint tests using FastAPI TestClient.
-Verifies all routes in PRD Section 11 and Section 15.2.
+Verifies all routes in System Specification Section 11 and Section 15.2.
 """
 
 from fastapi.testclient import TestClient

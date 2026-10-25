@@ -55,6 +55,15 @@
   - Created `heroku.yml` for Heroku Container Registry deployment.
   - Established automated GitHub Actions CI workflow in `.github/workflows/ci.yml`.
 
+## Phase 6: Documentation, Methodology, Demo Script & Final QA (Completed)
+- **Actions**:
+  - Authored comprehensive `README.md` with AI tools disclosure, directory tree, startup guides, test commands, and deployment instructions.
+  - Authored `docs/methodology.md` detailing the selection algorithm, error formulas (MAE, RMSE, Bias, WAPE, P90), and uncertainty bounds.
+  - Authored `docs/architecture.md` with Mermaid diagram and technical rationales.
+  - Authored `docs/demo_script.md` with real January 2026 computed figures for both video parts (Pitch & Tech Review).
+  - Executed final quality assurance: 24/24 backend tests passing, 4/4 frontend tests passing, 100% clean Ruff linting, zero TypeScript errors.
+
+
 
 
 

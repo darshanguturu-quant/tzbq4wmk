@@ -43,7 +43,7 @@ def compute_leak_free_uncertainty_band(
     # Wait: On decision date D at cutoff c (e.g. 09:20), delivery for date D is still currently underway!
     # Therefore, complete past delivery days are strictly <= (d_date - 1),
     # meaning decision dates <= (d_date - 2).
-    # Let's verify PRD 10.3 wording:
+    # Let's verify Specification 10.3 wording:
     # "For decision date D and cutoff c, the usable history is residuals for delivery intervals on dates strictly before D (so they were complete before c)"
     # That means delivery dates <= D - 1!
     # Decision dates for those delivery dates were <= D - 2!

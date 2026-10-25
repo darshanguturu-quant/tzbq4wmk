@@ -1,6 +1,6 @@
 """
 Comprehensive Phase 0 API Discovery Script for REint Wind Forecast Portal.
-Systematically tests questions 1 to 8 from PRD Section 8 and outputs docs/data_findings.md.
+Systematically tests questions 1 to 8 from System Specification Section 8 and outputs docs/data_findings.md.
 """
 
 from collections import Counter

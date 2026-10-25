@@ -1,6 +1,6 @@
 """
 Unit tests for core decision-time selection and evaluation services.
-Meets all criteria in PRD Section 15.1.
+Meets all criteria in System Specification Section 15.1.
 All test fixtures are explicitly labeled as synthetic.
 """
 
