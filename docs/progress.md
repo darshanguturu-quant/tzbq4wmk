@@ -48,6 +48,14 @@
   - Added Vitest frontend unit tests (`frontend/src/tests/components.test.ts`).
   - Generated production bundle in `frontend/dist/` seamlessly served by FastAPI.
 
+## Phase 5: Containerization & Deployment Skeleton (Completed)
+- **Actions**:
+  - Authored multi-stage `Dockerfile` with Node 20 frontend compilation and Python 3.12 non-root runtime.
+  - Created `compose.yaml` with port mapping and environment variables.
+  - Created `heroku.yml` for Heroku Container Registry deployment.
+  - Established automated GitHub Actions CI workflow in `.github/workflows/ci.yml`.
+
+
 
 
 
