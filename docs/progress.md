@@ -20,3 +20,13 @@
   - Generated cryptographic manifest `data/manifest.json` (SHA256: `c9a0499151944a0cdf5e2ccf2f21eb97e07e998edd5fad0ca735543efcc6b007`).
   - Added `Makefile`, `.env.example`, and `backend/app/config.py`.
 
+## Phase 2: Selection & Evaluation Logic + Unit Tests (Completed)
+- **Actions**:
+  - Implemented `backend/app/repositories/snapshot.py` for read-only access.
+  - Implemented `backend/app/services/asof_selection.py` with strict `publishTime <= cutoff` and negative lead-time exclusion.
+  - Implemented `backend/app/services/evaluation.py` for MAE, RMSE, Bias, WAPE, P90 absolute error, over/under splits, and breakdowns.
+  - Implemented `backend/app/services/uncertainty.py` with strictly leak-free lookback and insufficient history handling.
+  - Implemented `backend/app/services/data_quality.py` for interval matching audits.
+  - Created test suite `backend/tests/test_selection_and_evaluation.py` (12 passing tests, including named test `test_post_cutoff_revision_cannot_enter_backtest`).
+
+
