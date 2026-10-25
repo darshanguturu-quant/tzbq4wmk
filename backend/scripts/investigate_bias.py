@@ -7,11 +7,9 @@ Investigating the +1,745 MW forecast bias across 4 hypotheses:
 4. Raw Elexon comparison (embedded vs transmission-connected wind, API dataset definitions).
 """
 import sqlite3
-import pandas as pd
-import numpy as np
+
 import httpx
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+import pandas as pd
 
 DB_PATH = "data/snapshot.sqlite"
 
