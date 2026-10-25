@@ -37,5 +37,17 @@
   - Configured CORS and SPA route fallback serving in `backend/app/main.py`.
   - Added 11 endpoint integration tests in `backend/tests/test_api_endpoints.py`. All 23 tests pass.
 
+## Phase 4: Frontend SPA (Completed)
+- **Actions**:
+  - Initialized React 18 + TypeScript + Vite project in `frontend/`.
+  - Created bespoke CSS design system with trading terminal dark theme, neon emerald/cyan accents, and glassmorphism.
+  - Implemented persistent `ControlBar` with EPEX/N2EX gate closure presets and custom time picker.
+  - Built interactive SVG `DecisionChart` with hover tooltips, uncertainty bands, and actuals overlay.
+  - Built signed-error `ErrorHeatmap` calendar matrix covering all 744 hourly delivery intervals.
+  - Created 3 pages: `DecisionReplayPage`, `PerformancePage`, and `EvidencePage`.
+  - Added Vitest frontend unit tests (`frontend/src/tests/components.test.ts`).
+  - Generated production bundle in `frontend/dist/` seamlessly served by FastAPI.
+
+
 
 

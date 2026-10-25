@@ -149,3 +149,12 @@ def test_export_csv_endpoint():
     assert "forecast_mw" in header
     assert "actual_mw" in header
     assert "error_mw" in header
+
+
+def test_spa_fallback_route():
+    """Verifies that non-API routes return the SPA index.html for client-side routing."""
+    response = client.get("/replay")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "REint Wind Forecast" in response.text
+
