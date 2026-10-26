@@ -189,6 +189,41 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
         </div>
       )}
 
+      {/* Empirical Bias & Coverage Finding */}
+      {dataQuality && dataQuality.forecast_actual_ratio && (
+        <div className="card" style={{ borderLeft: "4px solid var(--wind-primary)" }}>
+          <div className="card-header">
+            <div>
+              <div className="card-title">
+                <FileText size={18} color="var(--wind-primary)" />
+                Observed Forecast / Actual Divergence in January 2026
+              </div>
+              <div className="card-subtitle">
+                Systematic gap between WINDFOR day-ahead forecasts and FUELHH settlement outturn
+              </div>
+            </div>
+            <div className="badge badge-accent font-mono" style={{ fontSize: "0.9rem" }}>
+              Ratio: {dataQuality.forecast_actual_ratio.toFixed(4)}x (+{((dataQuality.forecast_actual_ratio - 1) * 100).toFixed(2)}%)
+            </div>
+          </div>
+          <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+            <p>
+              In January 2026, <strong>WINDFOR forecasts are systematically higher than FUELHH outturn</strong> across all evaluated intervals.
+              Under cutoff <code className="font-mono">{cutoff}</code>, total forecast volume averaged{" "}
+              <strong className="font-mono text-wind">{dataQuality.mean_forecast_mw?.toLocaleString()} MW</strong> vs.{" "}
+              <strong className="font-mono text-actual">{dataQuality.mean_actual_mw?.toLocaleString()} MW</strong> average settlement outturn, yielding a pipeline-computed ratio of{" "}
+              <strong className="font-mono text-cyan">{dataQuality.forecast_actual_ratio.toFixed(4)}x</strong>.
+            </p>
+            <p style={{ marginTop: "0.5rem" }}>
+              This persistent difference <strong>likely reflects a coverage difference between the two datasets</strong> (for example, national-level visible wind capacity in WINDFOR vs. transmission-connected Balancing Mechanism Unit settlement outturn in FUELHH) rather than simple meteorological inaccuracy.
+            </p>
+            <p style={{ marginTop: "0.5rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              <em>Note on Product Scope:</em> As specified in the project requirements, the portal product uses <strong>exclusively FUELHH and WINDFOR</strong>. External diagnostic cross-checks (such as B1630 transparency data) are strictly out-of-scope diagnostic tools used for domain research and are not bundled into <code className="font-mono">snapshot.sqlite</code>, the REST API, the frontend, or the manifest.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Scope, Policy Decisions, and Methodology */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "1.5rem" }}>
         {/* Domain Selection Methodology */}

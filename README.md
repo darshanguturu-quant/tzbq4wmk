@@ -7,7 +7,7 @@
 
 A specialized decision-time forecast reconstruction and accuracy evaluation portal built for UK energy utilities participating in the **GB day-ahead electricity market**. The portal allows trading desks to reconstruct the exact national wind forecast available at critical auction gate closures (e.g. 09:20, 09:50, 15:30 GMT or custom), compare outturn actuals, and quantitatively evaluate forecast error risk across **January 2026** purchase decisions.
 
-> **Scope Boundary:** This product analyzes **national-level wind generation** actuals (FUELHH) and forecasts (WINDFOR) sourced exclusively from the Elexon BMRS API. It does not incorporate client demand, bilateral contracts, proprietary portfolios, or financial settlement prices. It provides wind forecast intelligence and risk quantification, not an automated thermal procurement dispatch instruction.
+> **Scope Boundary:** This product analyzes **national-level wind generation** actuals (FUELHH) and forecasts (WINDFOR) sourced exclusively from the Elexon BMRS API, as required by the assignment brief. It does not incorporate client demand, bilateral contracts, proprietary portfolios, or financial settlement prices. It provides wind forecast intelligence and risk quantification, not an automated thermal procurement dispatch instruction. External diagnostic datasets (such as B1630) are strictly out-of-scope cross-checks used offline for research and are not bundled into `data/snapshot.sqlite`, the REST API, the frontend, or `data/manifest.json`.
 
 ---
 
@@ -56,7 +56,9 @@ In compliance with the assignment brief, **AI tools were utilized to assist in t
 │   │       └── snapshot.py        # Read-only SQLite snapshot data access
 │   ├── scripts/
 │   │   ├── ingest_elexon.py       # Offline Elexon API extractor, validator, and snapshot generator
-│   │   └── explore_api.py         # Phase 0 API discovery and endpoint probe script
+│   │   ├── explore_api.py         # Phase 0 API discovery and endpoint probe script
+│   │   ├── investigate_bias.py    # Bias investigation & diagnostic B1630 cross-check
+│   │   └── independent_recomputation.py # Independent raw SQL vs. API interval recomputation
 │   └── tests/
 │       ├── test_selection_and_evaluation.py  # Unit tests (includes named post-cutoff test)
 │       └── test_api_endpoints.py             # FastAPI endpoint integration tests
@@ -76,11 +78,13 @@ In compliance with the assignment brief, **AI tools were utilized to assist in t
 │       └── tests/                 # Vitest frontend unit tests
 ├── data/
 │   ├── snapshot.sqlite            # Versioned historical snapshot (21,024 forecasts, 1,776 actuals)
-│   └── manifest.json              # Cryptographic audit summary (SHA-256 hash & validation log)
+│   ├── manifest.json              # Cryptographic audit summary (SHA-256 hash & validation log)
+│   └── bias_investigation_metrics.json # Saved structured metrics from bias investigation
 └── docs/
     ├── data_findings.md           # Phase 0 live API discovery results & parameter verification
-    ├── assumptions.md             # Policy decisions (decision gate interval policy, cutoffs)
-    ├── methodology.md             # Mathematical definitions and selection algorithm
+    ├── assumptions.md             # Policy decisions & confirmed vs unconfirmed verification items
+    ├── methodology.md             # Mathematical definitions, selection algorithm & investigation
+    ├── bias_investigation.md      # Detailed 4-part bias investigation & diagnostic cross-check
     ├── architecture.md            # System architecture with Mermaid diagrams & design rationales
     ├── demo_script.md             # Two-part video presentation guide with real figures
     └── progress.md                # Phase-by-phase implementation log
@@ -183,7 +187,7 @@ Runs Vitest unit tests verifying signed error conventions, local MW formatting, 
 ruff check backend/
 ruff format --check backend/
 
-# Type check TypeScript
+# Type check TypeScript and verify build
 cd frontend && npm run build
 ```
 
@@ -201,26 +205,32 @@ cd frontend && npm run build
 
 ## Forecast Bias Investigation & Findings (+1,745 MW)
 
-Across January 2026, comparing day-ahead `WINDFOR` forecasts against `FUELHH` settlement outturn reveals a systematic positive bias of **+1,745.94 MW** (+15.5%, with 84.7% of all intervals overforecasted). An independent investigation tested four hypotheses and established the following:
+Across January 2026, comparing day-ahead `WINDFOR` forecasts against `FUELHH` settlement outturn reveals a systematic positive bias of **+1,745.94 MW** (+15.47%, with 84.68% of all intervals overforecasted). An independent investigation tested four hypotheses to understand this gap:
 
-### Verified Facts
+### Empirical Observations
 1. **Structural Baseline (Not Day-Ahead Uncertainty):** Evaluating the latest pre-delivery forecast (~1.6h lead time) still yields a **+1,471.15 MW bias**. Over 84% of the bias persists into real time.
-2. **Proportional Output Scaling:** The bias scales directly with generation volume (+1,421 MW in low wind up to +2,263 MW in high wind), behaving as an aggregate **1.155x multiplier**.
-3. **Interval Alignment Invariant:** Exact `:00` actuals versus hourly averaged $(:00 + :30)/2$ actuals differ by only **1.95 MW (0.11%)**.
-4. **Official OpenAPI Definitions:**
+2. **Proportional Output Scaling:** The bias scales with generation volume (+1,421.3 MW in low wind up to +2,263.4 MW in high wind), behaving as an aggregate **1.1547x multiplier**.
+3. **Ratio Pattern:** The ratio of forecast to actual is **highest at low wind (1.224x) and lower at high wind (1.143x)**.
+4. **Interval Alignment Invariant:** Exact `:00` actuals versus hourly averaged $(:00 + :30)/2$ actuals differ by only **1.95 MW (0.11%)**.
+5. **Official OpenAPI Definitions** (Source: `https://data.elexon.co.uk/swagger/v1/swagger.json`, retrieved 2026-10-26):
    - `WINDFOR` is defined as *"wind generation forecast for wind farms which are visible to the ESO and have operational metering."*
    - `FUELHH` provides half-hourly aggregated settlement generation outturn from transmission-connected Balancing Mechanism Units (BMUs).
-5. **Empirical Triangulation (Full January 2026, N = 720 common hours):**
+6. **Out-of-Scope Diagnostic Triangulation (N = 720 common hours):**
    - Mean `WINDFOR` Day-Ahead Forecast: **13,227.75 MW**
    - Mean `B1630` National Actuals (Regulation 543/2013): **13,662.13 MW**
    - Mean `FUELHH` Transmission Outturn Actuals: **11,455.27 MW**
-   - **Crucial Finding:** `WINDFOR` matches national transparency actuals (`B1630`) within **-3.18% (-434 MW)**, whereas `B1630` is **+19.26% (+2,207 MW) higher than `FUELHH`** ($r = 0.9924$).
+   - `WINDFOR` matches national transparency actuals (`B1630`) within **-3.18% (-434 MW)**, whereas `B1630` is **+19.26% (+2,207 MW) higher than `FUELHH`** ($r = 0.9924$).
 
-### Domain Hypotheses vs. Remaining Unknowns
-- **Hypothesis A (Embedded Wind Scope):** `B1630` accounts for modeled embedded (distribution-connected) wind (~12–15% of GB capacity), while `FUELHH` measures only transmission-connected BMUs. If `WINDFOR` reflects national capability, this explains why it aligns with `B1630` rather than `FUELHH`.
-- **Hypothesis B (Transmission Curtailment):** `FUELHH` reflects actual settlement outturn *after* NESO downward curtailment (BOALF instructions to resolve transmission bottlenecks like the Scottish B6 boundary), whereas `WINDFOR` forecasts unconstrained weather potential.
-- **Remaining Unknowns:** Because unit-by-unit BMU mapping inside NESO's proprietary forecast algorithm is not exposed via the public API, the relative contribution between embedded wind and curtailment is an informed domain hypothesis rather than a single monolithic cause.
-*(Full methodology in [docs/methodology.md](docs/methodology.md#4-empirical-investigation--analysis-of-forecast-bias-1745-mw)).*
+### Cause Interpretation & Untested Hypotheses
+- **Cause Interpretation (Strongly Supported by Cross-Check, Not Proven at Unit Level):** The cross-check strongly supports the conclusion that the gap reflects a reporting perimeter difference between the two datasets (national-level visible wind capacity in `WINDFOR` vs. transmission-connected settlement outturn in `FUELHH`), rather than simple weather forecasting error. However, this is not proven at the individual generator unit level because unit-level telemetry is not published.
+- **Untested Hypotheses**:
+  - *Embedded Wind*: `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013, whereas `FUELHH` captures transmission-connected BMUs. Whether and to what extent NESO's `WINDFOR` includes embedded wind cannot be confirmed from public API documentation alone.
+  - *Transmission Curtailment*: `FUELHH` reflects actual settlement outturn after NESO downward balancing instructions (BOALF). However, because the forecast/actual ratio is higher at low wind (1.224x) than at high wind (1.143x), curtailment alone does not explain the pattern.
+- **Operational Guidance**:
+  - The size of the gap against `FUELHH` is **+1,745.94 MW** (a ratio of **~1.155x**).
+  - The right commercial adjustment depends on how the client defines demand (gross national demand vs. net transmission grid demand).
+  - Trading desks do not need to apply arbitrary fixed haircuts: the portal's **leak-free empirical residual uncertainty band** ($Q_{10}$ to $Q_{90}$) is derived directly from realized past forecast errors and already reflects this structural gap.
+*(Full quantitative data, scripts, and tables in [docs/bias_investigation.md](docs/bias_investigation.md)).*
 
 ---
 

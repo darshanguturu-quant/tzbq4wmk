@@ -32,12 +32,13 @@
   - **P90 Tail Risk:** **4,154 MW** — in 10% of intervals, the forecast was off by more than 4.1 GW!
   - **High-Risk Day Highlight:** *"Point out **January 12th**, where the forecast overpredicted wind by **6,894 MW** at 01:00 UTC."*
   - **Regime Insight:** *"Our wind level breakdown reveals that during high-wind intervals (&gt;14.5 GW), overforecasting bias jumped to **+2,263 MW**."*
+  - **Bias Investigation Discovery:** *"We ran a rigorous 4-part investigation on this +1.7 GW bias (documented in `docs/bias_investigation.md` and runnable via `backend/scripts/investigate_bias.py`): First, evaluating shortest-lead forecasts 1.6h before delivery showed 84% of the bias (+1,471 MW) persisted. Second, the overall forecast/actual ratio is ~1.155x, scaling with generation volume. Third, the ratio is highest at low wind (1.22x) and lower at high wind (1.14x), demonstrating that transmission curtailment alone cannot explain the pattern. Fourth, an out-of-scope diagnostic cross-check against Elexon's B1630 transparency actuals showed WINDFOR tracks national actuals within 3.2% (-434 MW), while FUELHH transmission outturn is 19.3% lower. This cause is strongly supported by the cross-check as reflecting a coverage difference between the two datasets, though not proven at unit level. While B1630 was an offline diagnostic, the portal product itself strictly uses FUELHH and WINDFOR as required. The right adjustment depends on how your desk defines demand, and our empirical residual band already reflects this gap."*
 - **Cutoff Sensitivity Comparison**:
   - *"Switch between presets (09:20 vs 09:50 vs 15:30). By comparing them strictly on common matched intervals, your desk can see the exact accuracy gain achieved by delaying commitments to later auction gates."*
 
 ### 4. Pilot Scope & Next Steps (4:00 - 5:00)
-- *"To respect the pilot boundary, this portal evaluates national wind generation from Elexon. It does not contain your specific retail demand or contract portfolio, so it is not a thermal dispatch recommendation."*
-- *"However, by quantifying the exact historical bias (+1.7 GW) and tail risk (4.1 GW), your trading desk can adjust procurement buffers systematically rather than guessing."*
+- *"To respect the pilot boundary, this portal evaluates national wind generation from Elexon. It does not contain your specific retail demand or contract portfolio, so it is not an automated thermal dispatch recommendation."*
+- *"However, by quantifying the exact historical gap (+1.7 GW) and tail risk (4.1 GW), your trading desk can evaluate the difference against your demand definition and use the empirical residual bands to hedge imbalance risks systematically."*
 
 ---
 

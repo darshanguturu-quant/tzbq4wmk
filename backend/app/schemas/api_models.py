@@ -107,6 +107,9 @@ class DataQualityResponse(BaseModel):
     negative_lead_rows_excluded: int
     conflicting_forecast_duplicates: int
     conflicting_actual_duplicates: int
+    mean_forecast_mw: float | None = None
+    mean_actual_mw: float | None = None
+    forecast_actual_ratio: float | None = None
     extraction_timestamp_utc: str | None = None
     snapshot_sha256: str | None = None
     api_base_url: str | None = None

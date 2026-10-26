@@ -63,6 +63,32 @@
   - Authored `docs/demo_script.md` with real January 2026 computed figures for both video parts (Pitch & Tech Review).
   - Executed final quality assurance: 24/24 backend tests passing, 4/4 frontend tests passing, 100% clean Ruff linting, zero TypeScript errors.
 
+## Phase 7: Bias Investigation, Scope Triangulation & Git History Anonymization (Completed)
+- **Actions**:
+  - Investigated the +1,745.94 MW (+15.5%) systematic overforecasting bias across 4 hypotheses:
+    1. *Shortest-Lead Horizon*: Evaluated latest pre-delivery revision (~1.6h lead time); bias remains +1,471.15 MW (84.3% persists into delivery), proving structural error rather than day-ahead horizon uncertainty.
+    2. *Scale Mismatch*: Evaluated forecast/actual ratio across terciles (Low: 1.224x, Med: 1.133x, High: 1.143x) and across all 24 hours (1.114x to 1.216x, std dev: 0.0372); proved proportional scale mismatch (+15.47% overall).
+    3. *Timing Alignment*: Evaluated exact `:00` vs $(:00 + :30)/2$ average actuals; net difference is only 1.95 MW (0.11%).
+    4. *Dataset Scope & Triangulation*: Audited Elexon OpenAPI specs and triangulated with Regulation (EU) 543/2013 national transparency actuals (`B1630` / `AGWS`) across January 2026. WINDFOR matches national transparency actuals within -3.18% (-434 MW), while transmission-metered outturn (`FUELHH`) runs 19.3% lower (+2,207 MW difference, $r = 0.9924$).
+  - Authored comprehensive report in `docs/bias_investigation.md` and updated `docs/methodology.md`, `README.md`, and `docs/demo_script.md`.
+  - Conducted independent recomputation on 3 randomly sampled delivery intervals using standalone raw SQL (Jan 7 14:00, Jan 19 08:00, Jan 28 21:00 UTC); verified 100.0% exact match against live API outputs.
+  - Performed complete repository and Git history anonymization: purged assignment files and personal identifiers (author names, handles, emails, and local user directories) from all commit author and committer metadata across entire history.
+  - Re-verified all test suites: 24/24 backend tests passing, 4/4 frontend tests passing, clean Ruff check, successful production build.
+
+## Phase 8: Audit Claim Calibration, Citations, Diagnostic Labeling & UI Dynamic Ratio (Completed)
+- **Actions**:
+  - Corrected claims across `docs/bias_investigation.md`, `docs/methodology.md`, `README.md`, and `docs/demo_script.md`:
+    - Replaced "Verified Fact" for the cause of forecast divergence with "strongly supported by the cross-check, not proven at unit level".
+    - Removed unverified claims regarding WINDFOR neural networks or training methods.
+    - Presented curtailment and embedded wind strictly as untested hypotheses; recorded that the forecast/actual ratio is highest at low wind (1.224x) and lower at high wind (1.143x), proving curtailment alone cannot explain the pattern.
+    - Replaced the fixed haircut recommendation with neutral commercial guidance based on client demand perimeter and empirical residual uncertainty bands.
+  - Labeled the B1630 comparison everywhere as an out-of-scope diagnostic cross-check; verified that B1630 is not present in `data/snapshot.sqlite`, the REST API, the frontend, or `data/manifest.json`.
+  - Moved reproducibility scripts into `backend/scripts/` (`investigate_bias.py` and `independent_recomputation.py`), both runnable from the repo root. Saved quantitative metrics in `data/bias_investigation_metrics.json`.
+  - Added source URLs (`https://data.elexon.co.uk/swagger/v1/swagger.json`) and retrieval dates (2026-10-26) for all quoted Elexon documentation.
+  - Updated `docs/assumptions.md` with confirmed vs. unconfirmed items.
+  - Updated the Evidence & Data Quality page in the UI to state in plain language that WINDFOR is systematically higher than FUELHH outturn in January 2026 using the pipeline's dynamically computed ratio (1.155x), noting that it likely reflects a coverage difference between the two datasets.
+
+
 
 
 

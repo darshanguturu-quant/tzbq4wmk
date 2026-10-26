@@ -157,4 +157,3 @@ def test_spa_fallback_route():
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "REint Wind Forecast" in response.text
-

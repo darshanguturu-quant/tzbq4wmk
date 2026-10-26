@@ -167,6 +167,9 @@ export interface DataQualityResponse {
   negative_lead_rows_excluded: number;
   conflicting_forecast_duplicates: number;
   conflicting_actual_duplicates: number;
+  mean_forecast_mw?: number | null;
+  mean_actual_mw?: number | null;
+  forecast_actual_ratio?: number | null;
   extraction_timestamp_utc: string | null;
   snapshot_sha256: string | null;
   api_base_url: string | null;

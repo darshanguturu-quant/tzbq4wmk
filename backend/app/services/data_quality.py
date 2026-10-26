@@ -79,6 +79,18 @@ def compute_data_quality_report(
             f"{missing_act} target delivery intervals have missing settlement actuals."
         )
 
+    mean_forecast_mw = None
+    mean_actual_mw = None
+    forecast_actual_ratio = None
+    if not matched.empty:
+        mean_forecast_mw = round(float(matched["forecast_mw"].mean()), 2)
+        mean_actual_mw = round(float(matched["actual_mw"].mean()), 2)
+        sum_act = float(matched["actual_mw"].sum())
+        if sum_act > 0:
+            forecast_actual_ratio = round(
+                float(matched["forecast_mw"].sum() / sum_act), 4
+            )
+
     return {
         "start_date": d_start.isoformat(),
         "end_date": d_end.isoformat(),
@@ -91,6 +103,9 @@ def compute_data_quality_report(
         "negative_lead_rows_excluded": negative_lead_count,
         "conflicting_forecast_duplicates": conflicting_forecast_duplicates,
         "conflicting_actual_duplicates": conflicting_actual_duplicates,
+        "mean_forecast_mw": mean_forecast_mw,
+        "mean_actual_mw": mean_actual_mw,
+        "forecast_actual_ratio": forecast_actual_ratio,
         "extraction_timestamp_utc": manifest.get("extraction_timestamp_utc"),
         "snapshot_sha256": manifest.get("snapshot_sha256"),
         "api_base_url": manifest.get("api_base_url"),
