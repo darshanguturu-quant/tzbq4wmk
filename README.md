@@ -22,8 +22,8 @@ A specialized decision-time forecast reconstruction and accuracy evaluation port
 ## AI Tools Disclosure
 
 In compliance with the assignment brief, **AI tools were utilized to assist in the development of this application**. Specifically:
-- **Google DeepMind Antigravity AI Coding Agent** (Gemini 3.8 Flash) was used for architecture scaffolding, data discovery scripting, service implementation, CSS design system drafting, and test generation.
-- **Verification Statement:** All data, API endpoints, and statistical metrics were **strictly cross-checked and independently verified against live Elexon BMRS API responses**. No mock data is present in the application snapshot; every figure reported in the UI, documentation, and video demo script is derived directly from real January 2026 Elexon data processed through this pipeline.
+- **Google Antigravity (Gemini)** and **Claude (Anthropic)** were used for architecture scaffolding, data discovery scripting, service implementation, CSS design system drafting, and test generation.
+- **Verification Statement:** All data, API endpoints, and statistical metrics were **strictly cross-checked and independently verified**. The independent recomputation was performed directly from the stored Elexon snapshot compared with the API output (not against live Elexon responses). No mock data is present in the application snapshot; every figure reported in the UI, documentation, and video demo script is derived directly from real January 2026 Elexon data processed through this pipeline.
 
 ---
 
