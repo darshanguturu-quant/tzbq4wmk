@@ -19,7 +19,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "includeFiles": "data/**",
+      "includeFiles": "{backend/**,data/**}",
       "maxDuration": 15
     }
   }
