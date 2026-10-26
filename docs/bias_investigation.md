@@ -57,7 +57,7 @@ Evaluating the aggregate ratio $\sum \text{Forecast} / \sum \text{Actual}$ acros
 
 **Finding & Mathematical Characterization**:
 1. The absolute Megawatt bias scales with generation volume: expanding from **+1,421.3 MW** in low wind to **+2,263.4 MW** in high wind.
-2. The forecast/actual ratio is **highest at low wind (1.224x)** and **lower at high wind (1.143x)**. This empirical pattern is critical: because the ratio is highest during low wind regimes, transmission curtailment alone cannot explain the pattern (curtailment would produce a sharply higher ratio during high wind when transmission export limits bind).
+2. The forecast/actual ratio is **highest at low wind (1.224x)** and **lower at high wind (1.143x)**. This ratio pattern (highest at low wind, lower at high wind) provides evidence against curtailment alone being the explanation (curtailment would typically elevate the ratio during high-wind transmission export constraints), rather than serving as a direct test of curtailment.
 
 ---
 
@@ -86,7 +86,8 @@ From the official **Elexon OpenAPI specification** (`https://data.elexon.co.uk/s
 
 2. **`FUELHH` (`GET /datasets/FUELHH`)**:
    > *"This endpoint provides the half-hourly generation outturn (Generation By Fuel type) to give our users an indication of the generation outturn for Great Britain. The data is aggregated by Fuel Type category and updated at 30-minute intervals with average MW values over 30 minutes for each category."*  
-   > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*
+   > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*  
+   > *(Background context note: While industry domain discussions frequently assume FUELHH reflects operational metering for transmission-connected Balancing Mechanism Units, this boundary is unconfirmed as the primary OpenAPI documentation states only that it provides an indication of GB generation outturn without specifying a BMU network boundary).*
 
 3. **`B1630` / `AGWS` (`GET /generation/actual/per-type/wind-and-solar`)** (Diagnostic Only):
    > *"This endpoint provides actual or estimated wind and solar power generation per settlement period. It returns generation with Power System Resource type Solar, Wind Onshore or Wind Offshore (Fuel Type categories as defined by Commission Regulation (EU) No 543/2013). This endpoint filters by startTime and provides a maximum data output range of 7 days."*  
@@ -96,7 +97,7 @@ From the official **Elexon OpenAPI specification** (`https://data.elexon.co.uk/s
 To investigate whether the observed +1,745 MW discrepancy reflects the forecast or the actuals, we pulled `B1630` transparency wind generation as an offline cross-check:
 - **Mean WINDFOR Day-Ahead Forecast**: **13,227.75 MW**
 - **Mean B1630 National Actuals (Regulation 543/2013)**: **13,662.13 MW**
-- **Mean FUELHH Transmission Outturn**: **11,455.27 MW**
+- **Mean FUELHH Settlement Outturn**: **11,455.27 MW**
 - **WINDFOR vs. B1630 Error**: **-434.38 MW (-3.18%)**
 - **WINDFOR vs. FUELHH Error**: **+1,772.47 MW (+15.47%)**
 - **B1630 vs. FUELHH Actuals Discrepancy**: **+2,206.85 MW (+19.26%)** ($r = 0.9924$)
@@ -108,17 +109,17 @@ To investigate whether the observed +1,745 MW discrepancy reflects the forecast 
 ### 3.1 Findings Strongly Supported by the Diagnostic Cross-Check (Not Proven at Unit Level)
 1. **The Discrepancy Exists Between Elexon Datasets Themselves**: The two official Elexon actual generation streams—`B1630` (transparency actuals) and `FUELHH` (settlement outturn)—diverge by an average of **+2,206.85 MW (+19.26%)** across common hours in January 2026.
 2. **`WINDFOR` Strongly Tracks `B1630`**: Day-ahead `WINDFOR` forecasts match total national wind actuals (`B1630`) within **-3.18% (-434 MW)** with a high correlation ($r = 0.9459$).
-3. **Coverage Perimeter Divergence**: The cross-check strongly supports the conclusion that `WINDFOR` and `FUELHH` measure different perimeters of the GB wind fleet rather than simple meteorological inaccuracy. However, because unit-level operational telemetry is not published, this cause is strongly supported by the cross-check but not proven at the individual generator unit level.
+3. **Coverage Perimeter Divergence**: The cross-check strongly supports the conclusion that `WINDFOR` and `FUELHH` measure different perimeters of the GB wind fleet rather than simple meteorological inaccuracy; however, unit-level generator telemetry and BMU registration rosters were not tested (as public Elexon feeds do not provide per-unit breakdowns), and the separate quantitative contributions of embedded wind and transmission curtailment remain untested.
 
 ### 3.2 Untested Hypotheses & Remaining Unknowns
 Two hypotheses are commonly discussed in the GB power domain, but both remain **untested hypotheses** that cannot be verified from public Elexon API data alone:
 
 - **Hypothesis A: Embedded Wind Generation**:
-  - `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013, whereas `FUELHH` reports operational metering from transmission-connected Balancing Mechanism Units (BMUs).
+  - `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013. In industry background context (unconfirmed), `FUELHH` is often assumed to capture only transmission-connected Balancing Mechanism Units (BMUs).
   - Whether and to what extent NESO's `WINDFOR` models include distribution-connected wind cannot be confirmed from the API documentation alone.
 - **Hypothesis B: Transmission Curtailment**:
   - `FUELHH` measures physical outturn after NESO executes downward balancing actions (BOALF) to resolve transmission export constraints.
-  - However, as demonstrated in Test 2, the forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**. If curtailment were the sole or primary driver, the ratio would spike during high wind periods when transmission bottlenecks bind. Curtailment alone therefore does not explain the observed pattern.
+  - However, curtailment is **not supported as the sole explanation**. As demonstrated in Test 2, the forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**; this ratio pattern provides evidence against curtailment alone being the explanation (curtailment would typically elevate the ratio during high wind), rather than serving as a direct test of curtailment.
 
 > **What cannot be proven from public Elexon API data alone:**  
 > Neither Elexon nor NESO publishes the unit roster, BMU mappings, or internal model architecture of `WINDFOR` in the public API. Therefore, any unit-level decomposition between embedded wind and transmission curtailment remains an unverified hypothesis.
@@ -131,7 +132,7 @@ For wholesale trading teams evaluating day-ahead wind forecasts against settleme
 1. **Gap Quantification**: The empirical gap between day-ahead `WINDFOR` and settlement outturn `FUELHH` averaged **+1,745.94 MW** (a ratio of **1.155x**) across January 2026.
 2. **Client Demand Context**: The appropriate commercial adjustment depends on how the client defines its portfolio demand:
    - If the client procures against **gross national demand** (which includes embedded wind generation), raw `WINDFOR` may be closer to physical fleet capability.
-   - If the client settles against **transmission-system demand / BMU outturn** (`FUELHH`), using raw `WINDFOR` without adjustment will systematically over-anticipate delivered wind volume.
+   - If the client settles against **transmission-system demand / settlement outturn** (`FUELHH`), using raw `WINDFOR` without adjustment will systematically over-anticipate delivered wind volume.
 3. **Uncertainty Protection**: Trading desks do not need to apply arbitrary fixed haircuts. The portal's **leak-free empirical residual bands** ($Q_{10}$ to $Q_{90}$) are derived directly from realized past forecast errors ($r = y - f$) and already reflect this structural gap.
 
 ---

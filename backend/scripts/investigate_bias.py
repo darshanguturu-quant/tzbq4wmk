@@ -346,7 +346,7 @@ def fetch_b1630_diagnostic(df_baseline: pd.DataFrame) -> dict:
     print(f"  N = {len(merged)} common delivery hours:")
     print(f"  Mean WINDFOR (09:20 Day-Ahead):       {mean_windfor:7.1f} MW")
     print(f"  Mean B1630 (National Actuals/Est):    {mean_b1630:7.1f} MW")
-    print(f"  Mean FUELHH (Transmission Outturn):   {mean_fuelhh:7.1f} MW")
+    print(f"  Mean FUELHH (Settlement Outturn):     {mean_fuelhh:7.1f} MW")
     print(
         f"  Discrepancy (B1630 vs. FUELHH):       +{diff_b1630_fuelhh:7.1f} MW (+{pct_diff:.2f}%)"
     )

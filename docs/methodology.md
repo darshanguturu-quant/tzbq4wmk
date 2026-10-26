@@ -113,7 +113,7 @@ An independent investigation tested four hypotheses to understand this gap, sepa
     - Mean Forecast: 18,128.0 MW | Mean Actual: 15,864.7 MW | Bias: **+2,263.4 MW**
     - Aggregate Ratio ($\sum \text{Fc} / \sum \text{Act}$): **1.143x (+14.3%)**
   - **Overall January 2026 Ratio**: $\sum \text{Forecast} / \sum \text{Actual} = \mathbf{1.1547\times}$ (**+15.47%** overall).
-- **Conclusion**: The absolute Megawatt bias scales with generation volume (+1.4 GW in low wind up to +2.3 GW in high wind). Crucially, the forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**. This demonstrates that transmission curtailment alone cannot explain the pattern (curtailment would cause the ratio to spike during high wind conditions).
+- **Conclusion**: The absolute Megawatt bias scales with generation volume (+1.4 GW in low wind up to +2.3 GW in high wind). Crucially, the forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**. This ratio pattern provides evidence against curtailment alone being the explanation (curtailment would typically elevate the ratio during high-wind transmission export constraints), rather than serving as a direct test of curtailment.
 
 ### 4.3 Test 3: Hourly vs. Half-Hourly Alignment & Averaging
 - **Question**: Does matching hourly WINDFOR (:00) against instantaneous :00 FUELHH actuals cause a discrepancy compared to averaging the two half-hourly periods $(:00 + :30)/2$?
@@ -133,7 +133,8 @@ From the official **Elexon OpenAPI specification** (`https://data.elexon.co.uk/s
    > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*
 2. **FUELHH (`GET /datasets/FUELHH`)**:
    > *"This endpoint provides the half-hourly generation outturn (Generation By Fuel type) to give our users an indication of the generation outturn for Great Britain. The data is aggregated by Fuel Type category and updated at 30-minute intervals with average MW values over 30 minutes for each category."*  
-   > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*
+   > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*  
+   > *(Background context note: While industry domain discussions frequently assume FUELHH reflects operational metering for transmission-connected Balancing Mechanism Units, this boundary is unconfirmed as the primary OpenAPI documentation does not specify a BMU restriction).*
 3. **B1630 / AGWS (`GET /generation/actual/per-type/wind-and-solar`)** (Diagnostic Cross-Check):
    > *"This endpoint provides actual or estimated wind and solar power generation per settlement period. It returns generation with Power System Resource type Solar, Wind Onshore or Wind Offshore (Fuel Type categories as defined by Commission Regulation (EU) No 543/2013). This endpoint filters by startTime and provides a maximum data output range of 7 days."*  
    > *(Source: Elexon OpenAPI specification, retrieved 2026-10-26).*
@@ -141,7 +142,7 @@ From the official **Elexon OpenAPI specification** (`https://data.elexon.co.uk/s
 #### Out-of-Scope Diagnostic Cross-Check Across January 2026 (N = 720 common hours)
 - **Mean WINDFOR (09:20 Day-Ahead Forecast)**: **13,227.75 MW**
 - **Mean B1630 (National Actual/Estimated Wind)**: **13,662.13 MW**
-- **Mean FUELHH (Transmission-Metered Outturn)**: **11,455.27 MW**
+- **Mean FUELHH (Settlement Outturn)**: **11,455.27 MW**
 - **WINDFOR vs. FUELHH Bias**: **+1,772.47 MW (+15.47%)**
 - **WINDFOR vs. B1630 Bias**: **-434.38 MW (-3.18%)**
 - **B1630 vs. FUELHH Outturn Discrepancy**: **+2,206.85 MW (+19.26%)**
@@ -149,10 +150,10 @@ From the official **Elexon OpenAPI specification** (`https://data.elexon.co.uk/s
 
 ### 4.5 Findings Supported by Cross-Check vs. Untested Hypotheses
 - **Finding Strongly Supported by Cross-Check (Not Proven at Unit Level)**:  
-  The discrepancy between `WINDFOR` and `FUELHH` is **strongly supported by the cross-check as reflecting a coverage difference between the two datasets**, rather than meteorological forecasting error. In January 2026, Elexon's two outturn feeds (`B1630` and `FUELHH`) differ by an average of +2,207 MW (+19.3%), and `WINDFOR` tracks `B1630` within 3.2%. However, because unit-level operational telemetry is not published, this cause is not proven at the individual generator unit level.
+  The discrepancy between `WINDFOR` and `FUELHH` is **strongly supported by the cross-check as reflecting a coverage difference between the two datasets**, rather than meteorological forecasting error; however, unit-level BMU telemetry and individual generator metering were not tested (as public Elexon feeds do not provide per-unit breakdowns), and the specific quantitative split between embedded generation and curtailment remains untested.
 - **Untested Hypotheses**:
-  - *Embedded Wind*: `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013, whereas `FUELHH` captures transmission-connected BMUs. Whether and to what extent NESO's `WINDFOR` includes embedded wind cannot be verified from the API documentation alone.
-  - *Curtailment*: `FUELHH` measures outturn after NESO downward balancing instructions (BOALF). However, because the forecast/actual ratio is higher at low wind (1.224x) than at high wind (1.143x), curtailment alone does not explain the pattern.
+  - *Embedded Wind*: `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013. In industry background context (unconfirmed), `FUELHH` is often assumed to capture only transmission-connected Balancing Mechanism Units (BMUs). Whether and to what extent NESO's `WINDFOR` includes embedded wind cannot be verified from the API documentation alone.
+  - *Curtailment*: `FUELHH` measures outturn after NESO downward balancing instructions (BOALF). However, transmission curtailment is **not supported as the sole explanation**. Because the forecast/actual ratio is higher at low wind (1.224x) than at high wind (1.143x), this ratio pattern provides evidence against curtailment alone being the explanation, rather than serving as a direct test of curtailment.
 - **Remaining Unknowns**:
   - The proprietary unit registration lists and internal model structures inside NESO's forecasting system are not published in the public Elexon API. Therefore, the exact numerical breakdown between embedded wind and transmission curtailment remains an untested hypothesis.
 - **Operational Guidance**:

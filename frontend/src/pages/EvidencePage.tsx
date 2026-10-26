@@ -215,7 +215,7 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
               <strong className="font-mono text-cyan">{dataQuality.forecast_actual_ratio.toFixed(4)}x</strong>.
             </p>
             <p style={{ marginTop: "0.5rem" }}>
-              This persistent difference <strong>likely reflects a coverage difference between the two datasets</strong> (for example, national-level visible wind capacity in WINDFOR vs. transmission-connected Balancing Mechanism Unit settlement outturn in FUELHH) rather than simple meteorological inaccuracy.
+              This persistent difference <strong>likely reflects a coverage difference between the two datasets</strong> (for example, national-level visible wind capacity in WINDFOR vs. settlement outturn in FUELHH, commonly assumed in industry context to reflect transmission BMUs, unconfirmed) rather than simple meteorological inaccuracy.
             </p>
             <p style={{ marginTop: "0.5rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
               <em>Note on Product Scope:</em> As specified in the project requirements, the portal product uses <strong>exclusively FUELHH and WINDFOR</strong>. External diagnostic cross-checks (such as B1630 transparency data) are strictly out-of-scope diagnostic tools used for domain research and are not bundled into <code className="font-mono">snapshot.sqlite</code>, the REST API, the frontend, or the manifest.

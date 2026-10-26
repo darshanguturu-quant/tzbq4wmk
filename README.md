@@ -214,18 +214,18 @@ Across January 2026, comparing day-ahead `WINDFOR` forecasts against `FUELHH` se
 4. **Interval Alignment Invariant:** Exact `:00` actuals versus hourly averaged $(:00 + :30)/2$ actuals differ by only **1.95 MW (0.11%)**.
 5. **Official OpenAPI Definitions** (Source: `https://data.elexon.co.uk/swagger/v1/swagger.json`, retrieved 2026-10-26):
    - `WINDFOR` is defined as *"wind generation forecast for wind farms which are visible to the ESO and have operational metering."*
-   - `FUELHH` provides half-hourly aggregated settlement generation outturn from transmission-connected Balancing Mechanism Units (BMUs).
+   - `FUELHH` provides half-hourly aggregated settlement generation outturn (*"to give our users an indication of the generation outturn for Great Britain"*; commonly assumed in industry background context to reflect transmission-connected BMUs, unconfirmed).
 6. **Out-of-Scope Diagnostic Triangulation (N = 720 common hours):**
    - Mean `WINDFOR` Day-Ahead Forecast: **13,227.75 MW**
    - Mean `B1630` National Actuals (Regulation 543/2013): **13,662.13 MW**
-   - Mean `FUELHH` Transmission Outturn Actuals: **11,455.27 MW**
+   - Mean `FUELHH` Settlement Outturn Actuals: **11,455.27 MW**
    - `WINDFOR` matches national transparency actuals (`B1630`) within **-3.18% (-434 MW)**, whereas `B1630` is **+19.26% (+2,207 MW) higher than `FUELHH`** ($r = 0.9924$).
 
 ### Cause Interpretation & Untested Hypotheses
-- **Cause Interpretation (Strongly Supported by Cross-Check, Not Proven at Unit Level):** The cross-check strongly supports the conclusion that the gap reflects a reporting perimeter difference between the two datasets (national-level visible wind capacity in `WINDFOR` vs. transmission-connected settlement outturn in `FUELHH`), rather than simple weather forecasting error. However, this is not proven at the individual generator unit level because unit-level telemetry is not published.
+- **Cause Interpretation (Strongly Supported by Cross-Check, Not Proven at Unit Level):** The cross-check strongly supports the conclusion that the gap reflects a reporting perimeter difference between the two datasets, rather than simple weather forecasting error; however, unit-level BMU telemetry and individual generator metering were not tested (as public Elexon data does not publish unit breakdowns), and the separate quantitative contributions of embedded wind and transmission curtailment remain untested.
 - **Untested Hypotheses**:
-  - *Embedded Wind*: `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013, whereas `FUELHH` captures transmission-connected BMUs. Whether and to what extent NESO's `WINDFOR` includes embedded wind cannot be confirmed from public API documentation alone.
-  - *Transmission Curtailment*: `FUELHH` reflects actual settlement outturn after NESO downward balancing instructions (BOALF). However, because the forecast/actual ratio is higher at low wind (1.224x) than at high wind (1.143x), curtailment alone does not explain the pattern.
+  - *Embedded Wind*: `B1630` includes modeled estimates of distribution-connected (embedded) wind generation under Regulation 543/2013. In industry background context (unconfirmed), `FUELHH` is often assumed to capture only transmission-connected BMUs. Whether and to what extent NESO's `WINDFOR` includes embedded wind cannot be confirmed from public API documentation alone.
+  - *Transmission Curtailment*: `FUELHH` reflects actual settlement outturn after NESO downward balancing instructions (BOALF). However, transmission curtailment is **not supported as the sole explanation**; because the forecast/actual ratio is higher at low wind (1.224x) than at high wind (1.143x), this ratio pattern provides evidence against curtailment alone, rather than serving as a direct test of curtailment.
 - **Operational Guidance**:
   - The size of the gap against `FUELHH` is **+1,745.94 MW** (a ratio of **~1.155x**).
   - The right commercial adjustment depends on how the client defines demand (gross national demand vs. net transmission grid demand).

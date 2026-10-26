@@ -68,7 +68,7 @@ This section records the audit status of the PRD open verification items and dom
 1. **FUELHH Generation Semantics & Units**:
    - **Status**: [CONFIRMED]
    - **Evidence**: Verified via live API query (`GET /datasets/FUELHH/stream`) and official OpenAPI specification (`https://data.elexon.co.uk/swagger/v1/swagger.json`, retrieved 2026-10-26).
-   - **Details**: FUELHH reports half-hourly generation outturn for Great Britain aggregated by fuel type in average Megawatts (MW) over 30-minute intervals. Reflects operational metering for transmission-connected Balancing Mechanism Units (BMUs).
+   - **Details**: FUELHH reports half-hourly generation outturn for Great Britain aggregated by fuel type in average Megawatts (MW) over 30-minute intervals (settlement periods 1 to 48), providing an indication of GB generation outturn.
 2. **WINDFOR Real Publication Schedule**:
    - **Status**: [CONFIRMED]
    - **Evidence**: Probed across all dates in January 2026.
@@ -95,7 +95,10 @@ This section records the audit status of the PRD open verification items and dom
    - **Reason**: NESO and Elexon do not publish the individual BMU registry or list of distribution-connected metering units feeding into `WINDFOR` forecast models in the public API.
 2. **Decomposition Between Embedded Wind and Transmission Curtailment**:
    - **Status**: [UNCONFIRMED / UNTESTED HYPOTHESIS]
-   - **Reason**: While the diagnostic cross-check strongly supports a coverage perimeter difference, the exact quantitative split between distribution-connected (embedded) wind generation vs. transmission curtailment cannot be independently calculated at the unit level from public Elexon API data alone.
-3. **Transmission Curtailment as the Primary Cause**:
-   - **Status**: [DISPROVEN AS PRIMARY CAUSE]
-   - **Reason**: The forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**. If curtailment were the primary driver, the ratio would spike during high wind conditions when transmission export limits bind. Curtailment alone therefore does not explain the observed pattern.
+   - **Reason**: While the diagnostic cross-check strongly supports a coverage perimeter difference rather than pure forecast error, unit-level BMU telemetry was not tested, and the exact quantitative split between distribution-connected (embedded) wind generation vs. transmission curtailment remains untested.
+3. **Transmission Curtailment as the Sole Explanation**:
+   - **Status**: [NOT SUPPORTED AS THE SOLE EXPLANATION]
+   - **Reason**: The forecast/actual ratio is **highest at low wind (1.224x) and lower at high wind (1.143x)**. This ratio pattern provides evidence against curtailment alone being the explanation (curtailment would typically elevate the ratio during high-wind transmission export constraints), rather than serving as a direct test of curtailment.
+4. **FUELHH BMU Scope Boundary (Transmission-Connected Units)**:
+   - **Status**: [UNCONFIRMED / BACKGROUND CONTEXT]
+   - **Reason**: Industry background context often treats FUELHH outturn as reflecting operational metering for transmission-connected Balancing Mechanism Units (BMUs). However, the primary Elexon OpenAPI specification states only that it provides *"an indication of the generation outturn for Great Britain"* without specifying an explicit BMU boundary. Because no primary-source documentation sentence in the API specification confirms this boundary, it is treated as unconfirmed background context rather than a confirmed fact.
