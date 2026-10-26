@@ -62,20 +62,24 @@ export const PerformancePage: React.FC<PerformancePageProps> = ({ cutoff }) => {
   const { headline, top_errors } = data;
   const biasDirection = (headline.bias_mw || 0) > 0 ? "Overforecast" : "Underforecast";
 
-  // Build heatmap cell data from daily and hourly breakdowns
-  const heatmapData = data.daily_breakdown.flatMap((day) => {
-    return data.hourly_breakdown.map((h) => {
-      // Approximate day + hour combination using hourly bias or variance
-      const err = (day.bias_mw + h.bias_mw) / 2;
-      return {
-        deliveryDate: day.delivery_date,
-        hour: h.delivery_hour,
-        forecastMw: (day.mean_forecast_mw + h.mean_forecast_mw) / 2,
-        actualMw: (day.mean_actual_mw + h.mean_actual_mw) / 2,
-        errorMw: err,
-      };
-    });
-  });
+  // Build heatmap cell data directly from genuine matched delivery intervals
+  const heatmapData = (data.intervals && data.intervals.length > 0)
+    ? data.intervals.map((inv) => ({
+        deliveryDate: inv.delivery_date,
+        hour: inv.hour,
+        forecastMw: inv.forecast_mw,
+        actualMw: inv.actual_mw,
+        errorMw: inv.error_mw,
+      }))
+    : data.daily_breakdown.flatMap((day) =>
+        data.hourly_breakdown.map((h) => ({
+          deliveryDate: day.delivery_date,
+          hour: h.delivery_hour,
+          forecastMw: day.mean_forecast_mw,
+          actualMw: day.mean_actual_mw,
+          errorMw: day.bias_mw,
+        }))
+      );
 
   return (
     <div className="dashboard-grid">

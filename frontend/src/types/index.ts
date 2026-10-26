@@ -129,6 +129,14 @@ export interface TopErrorItem {
   lead_time_hours: number | null;
 }
 
+export interface PerformanceIntervalItem {
+  delivery_date: string;
+  hour: number;
+  forecast_mw: number | null;
+  actual_mw: number | null;
+  error_mw: number | null;
+}
+
 export interface PerformanceResponse {
   cutoff_time: string;
   start_date: string;
@@ -143,6 +151,7 @@ export interface PerformanceResponse {
     largest_underforecasts: TopErrorItem[];
   };
   so_what: string;
+  intervals?: PerformanceIntervalItem[];
 }
 
 export interface CutoffComparisonItem {

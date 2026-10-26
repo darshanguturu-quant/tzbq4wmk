@@ -13,9 +13,9 @@ A specialized decision-time forecast reconstruction and accuracy evaluation port
 
 ## Deployed Application
 
-- **Live URL:** `DEPLOYED_APP_URL` *(Placeholder: Replace with your active Heroku or Vercel URL after deployment)*
-- **Public Access:** Available directly in incognito mode without authentication.
-- **Liveness Health Check:** `DEPLOYED_APP_URL/api/health`
+- **Live URL:** Configured upon hosting (e.g. `https://<YOUR-APP-NAME>.herokuapp.com`).
+- **Public Access:** Accessible directly in any web browser without authentication.
+- **Liveness Health Check:** `https://<YOUR-APP-NAME>.herokuapp.com/api/health`
 
 ---
 

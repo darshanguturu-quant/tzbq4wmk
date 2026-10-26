@@ -17,7 +17,7 @@
 ### 2. Walkthrough: Decision Replay (1:00 - 2:30)
 - **Navigate to Decision Replay page** (Select **January 15, 2026**, Cutoff **09:20 GMT**):
   - *"Here is the wind outlook exactly as your desk saw it at the 09:20 EPEX gate closure for delivery on January 16th."*
-  - *"Notice the peak forecast is **19,252 MW** with an average delivery of **14,640 MW**."*
+  - *"Notice the peak forecast is **10,375 MW** with an average delivery of **7,930 MW** (minimum **6,242 MW**)."*
   - *"Hovering over each delivery interval shows the exact forecast revision selected (issued at **07:30 UTC**, aged 110 minutes). Revisions published later in the day are strictly excluded."*
   - *"Notice the cyan band: this is our leak-free empirical residual band (10th to 90th percentile), giving your traders an immediate confidence interval based strictly on historical forecast performance."*
 - **Switch Toggle to "Outcome Review"**:

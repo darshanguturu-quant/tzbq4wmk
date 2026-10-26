@@ -299,6 +299,29 @@ def compute_top_errors(
     }
 
 
+def compute_interval_records(matched_df: pd.DataFrame) -> list[dict[str, Any]]:
+    if matched_df.empty:
+        return []
+    records = []
+    for _, r in matched_df.iterrows():
+        records.append(
+            {
+                "delivery_date": str(r["delivery_date"]),
+                "hour": int(r["delivery_hour"]),
+                "forecast_mw": round(float(r["forecast_mw"]), 1)
+                if pd.notnull(r["forecast_mw"])
+                else None,
+                "actual_mw": round(float(r["actual_mw"]), 1)
+                if pd.notnull(r["actual_mw"])
+                else None,
+                "error_mw": round(float(r["error_mw"]), 1)
+                if pd.notnull(r["error_mw"])
+                else None,
+            }
+        )
+    return records
+
+
 def compute_performance_summary(
     forecast_df: pd.DataFrame,
     actuals_df: pd.DataFrame,
@@ -321,6 +344,7 @@ def compute_performance_summary(
     daily = compute_daily_breakdown(matched)
     wind_level = compute_wind_level_breakdown(matched)
     top_errs = compute_top_errors(matched, top_n=10)
+    interval_records = compute_interval_records(matched)
 
     # Automated so-what callout based strictly on real computed numbers
     so_what = "Data evaluated across the specified period."
@@ -348,6 +372,7 @@ def compute_performance_summary(
         "wind_level_breakdown": wind_level,
         "top_errors": top_errs,
         "so_what": so_what,
+        "intervals": interval_records,
     }
 
 

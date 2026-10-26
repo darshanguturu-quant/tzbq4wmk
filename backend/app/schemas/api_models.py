@@ -83,6 +83,7 @@ class PerformanceResponse(BaseModel):
     wind_level_breakdown: list[dict[str, Any]]
     top_errors: dict[str, list[dict[str, Any]]]
     so_what: str
+    intervals: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class CutoffComparisonItem(BaseModel):

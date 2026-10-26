@@ -95,6 +95,14 @@
   - Qualified every "strongly supported" statement by explicitly naming what was not tested (unit-level BMU telemetry and individual generator metering, as well as the quantitative decomposition between embedded wind and curtailment).
   - Re-ran test and build suites: pytest (24/24 passed), ruff (clean), npm test (4/4 passed), and npm run build.
 
+## Phase 10: Full Project Audit & Genuine Data Integrity Enforcement (Completed)
+- **Actions**:
+  - Audited all metrics, documentation statements, UI components, and API schemas against `data/snapshot.sqlite`.
+  - Eliminated synthetic formula approximation `(day.bias + hour.bias)/2` from `ErrorHeatmap` by adding real matched delivery interval records to `compute_performance_summary` and `PerformanceResponse`.
+  - Corrected demo script walk-through figures for January 15/16 decision profile to match real snapshot figures (peak 10,375 MW, average 7,930 MW, minimum 6,242 MW).
+  - Clarified deployment URL descriptors in `README.md`.
+  - Verified all tests, linter checks, and production builds pass cleanly.
+
 
 
 
