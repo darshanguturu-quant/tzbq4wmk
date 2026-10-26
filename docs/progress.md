@@ -103,6 +103,14 @@
   - Clarified deployment URL descriptors in `README.md`.
   - Verified all tests, linter checks, and production builds pass cleanly.
 
+## Phase 11: Vercel Free-Tier Deployment Configuration (Completed)
+- **Actions**:
+  - Implemented `api/index.py` serverless adapter exposing the FastAPI ASGI app directly to Vercel's Python runtime.
+  - Added root `vercel.json` configuring monorepo frontend installation/building, client-side SPA routing rewrites, `/api` serverless dispatch, and `data/**` asset bundling.
+  - Added production-only root `requirements.txt` containing runtime dependencies (`fastapi`, `uvicorn`, `pydantic`, `pandas`, `python-dateutil`) and excluding development/offline packages.
+  - Configured `allow_origin_regex=r"^https://.*\.vercel\.app$"` in `backend/app/main.py`.
+  - Re-ran test and build suites: pytest (24/24 passed), ruff (clean), npm test (4/4 passed), and npm run build.
+
 
 
 

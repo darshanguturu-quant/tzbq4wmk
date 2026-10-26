@@ -95,16 +95,6 @@ export const App: React.FC = () => {
         {activeTab === "performance" && <PerformancePage cutoff={currentCutoff} />}
         {activeTab === "evidence" && <EvidencePage cutoff={currentCutoff} />}
       </main>
-
-      {/* Footer */}
-      <footer style={{ borderTop: "1px solid var(--border-subtle)", padding: "1.25rem 2rem", background: "var(--bg-surface)", fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
-        <div>
-          <strong>REint Full Stack SWE Challenge</strong> &bull; Elexon BMRS National Wind Generation &bull; January 2026 Decision Scope
-        </div>
-        <div>
-          Data is frozen in snapshot.sqlite &bull; Strictly leak-free decision cutoffs &bull; Zero synthetic zero-filling
-        </div>
-      </footer>
     </div>
   );
 };
