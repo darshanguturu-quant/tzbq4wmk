@@ -1,6 +1,5 @@
 # Decision-Time Wind Forecast Intelligence Portal
 
-[![CI Test Suite](https://github.com/anonymous/reint-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/anonymous/reint-portal/actions)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![React 18](https://img.shields.io/badge/react-18-cyan.svg)](https://react.dev/)
 [![Docker](https://img.shields.io/badge/docker-container-blue.svg)](https://www.docker.com/)
@@ -13,9 +12,8 @@ A specialized decision-time forecast reconstruction and accuracy evaluation port
 
 ## Deployed Application
 
-- **Live URL:** Configured upon hosting (e.g. `https://<YOUR-APP-NAME>.herokuapp.com`).
+- **Live URL:** https://tzbq4wmk.vercel.app/
 - **Public Access:** Accessible directly in any web browser without authentication.
-- **Liveness Health Check:** `https://<YOUR-APP-NAME>.herokuapp.com/api/health`
 
 ---
 
@@ -99,8 +97,8 @@ Prerequisites: Docker Engine / Docker Desktop installed.
 
 ```bash
 # Clone the repository
-git clone <REPO_URL>
-cd <REPO_NAME>
+git clone https://github.com/darshanguturu-quant/tzbq4wmk.git
+cd tzbq4wmk
 
 # Build and run the single-container app
 docker compose up --build
