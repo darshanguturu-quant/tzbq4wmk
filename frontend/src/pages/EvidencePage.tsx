@@ -312,7 +312,7 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
               <strong>Empirical Uncertainty Band:</strong> Derived from past error percentiles (10th-90th) using strictly prior delivery days. Not an official Elexon probabilistic forecast.
             </li>
             <li>
-              <strong>Lead-Time Band Assignment:</strong> Lead time is strictly <code className="font-mono">startTime - publishTime</code>. At cutoffs &ge; 11:30 (e.g. 12:00), the scheduled day-ahead delivery horizon has maximum band 30-36h. When an intraday delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on Jan 15), delivery intervals at 22:00 and 23:00 are assigned to the terminal day-ahead band (30-36h).
+              <strong>Lead-Time Band Derivation &amp; Fallback Annotation:</strong> Lead-time bands are binned directly from raw <code className="font-mono">lead_time_hours = startTime - publishTime</code> of the selected forecast into standard 6h bins without capping or reassignment. At cutoff 09:20, the 36-42h band contains 124 intervals (4 hours &times; 31 days) because selecting the 07:30 UTC publication naturally yields lead times up to 39.5h for delivery hours 20:00 to 23:00. At cutoff 12:00, the 36-42h band contains exactly 2 intervals: on 2026-01-15, Elexon did not publish an 11:30 UTC revision (the next publication occurred at 12:25:00 UTC), so the cutoff-constrained pipeline fell back to the 09:30 UTC publication for delivery targets 2026-01-16 22:00 (36.5h lead) and 23:00 (37.5h lead).
             </li>
           </ul>
         </div>

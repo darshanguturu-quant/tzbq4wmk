@@ -111,12 +111,29 @@
 ## Phase 12: Resolution of Verified Quality Defects (Completed)
 - **Actions**:
   - **Fix 1 (Resolution Matching Policy)**: Confirmed WINDFOR snapshot emits strictly hourly targets (`:00` only, 21,024 records, 0 records at `:30`). FUELHH emits half-hourly actuals (1,776 records, 888 at `:00`, 888 at `:30`). Documented explicit justification in Evidence & Audit, README, and assumptions: true 30-minute matched evaluation is impossible without inventing/interpolating data; missing values are never zero-filled, so evaluation is strictly hourly (744/744 matched pairs in January 2026, 100.0% coverage), with the 744 `:30` actuals remaining unmatched.
-  - **Fix 2 (Impossible Lead-Time Band at 12:00 Cutoff)**: Root cause identified: on 2026-01-15, Elexon delayed midday WINDFOR publication from 11:30 to 12:25:00 UTC (verified against both live BMRS API stream and frozen snapshot). Under cutoff 12:00, the selector chose 09:30:00 UTC (fallback publication). Delivery targets 2026-01-16 22:00 and 23:00 had exact `startTime - publishTime` lead times of 36.5h and 37.5h. Reassigned day-ahead delivery spillover intervals at cutoffs >= 11:30 to the terminal day-ahead band `30-36h`. After the fix: 36-42h band at 12:00 is absent (0 count), 30-36h band count increased from 186 to 188, and all bands sum to 744. The 09:20 preset lead-time bands (124 in 36-42h) and headline metrics are completely unchanged.
+  - **Fix 2 (Lead-Time Band Derivation & Fallback Investigation)**: Root cause identified: on 2026-01-15, Elexon delayed midday WINDFOR publication from 11:30 to 12:25:00 UTC (verified against both live BMRS API stream and frozen snapshot). Under cutoff 12:00, the selector chose 09:30:00 UTC (fallback publication). Delivery targets 2026-01-16 22:00 and 23:00 had exact `startTime - publishTime` lead times of 36.5h and 37.5h.
   - **Fix 3 (Metric Label Correction)**: Corrected KPI card label from "Root Mean Squared (RMSE)" to "Root Mean Square Error". Removed `text-transform: uppercase` from `.kpi-label` in `index.css`. Verified formula shown remains $\text{RMSE} = \sqrt{\text{mean}(e^2)}$, where $e = \text{forecast} - \text{actual}$.
   - **Fix 4 (Removed Misleading Live Phrasing)**: Changed header title in `App.tsx` from "January 2026 Live Snapshot" to "January 2026 Snapshot". Updated Evidence page labels to clarify that data is an offline frozen bundle extracted 2026-10-25 19:33 UTC with SHA-256 integrity verification.
   - **Fix 5 (Custom Cutoff in Sensitivity Comparison)**: Updated `fetchPerformanceCompare` in `PerformancePage.tsx` to include the active custom cutoff alongside presets. Rendered custom cutoff as its own row labeled `Custom Cutoff (HH:MM)` and marked `(Active)` when selected. Evaluated strictly on the identical 744 common intervals. Presets remain unchanged.
   - **Fix 6 (Documented 0 MW Uncertainty Band Lower Bound)**: Audited `backend/app/services/uncertainty.py` line 107. Documented exact flooring rule `lower = max(0.0, forecast + Q10(residual))` in Evidence & Audit, `docs/assumptions.md`, and `docs/methodology.md`: due to systematic positive bias (+1,745 MW), empirical residuals are heavily negative; lower bounds are floored at 0.0 MW because physical wind generation cannot be negative.
   - **QA & Verification**: Re-ran full test suite: pytest (25/25 passed, including new test `test_lead_time_bands_at_1200_and_0920`), Vitest (6/6 passed, including custom cutoff comparison and 0 MW band flooring tests), ruff lint/format (clean), and TypeScript production build (`npm run build`, clean).
+
+## Phase 13: Fix 2 Revert & Zero Fabrication Data Audit (Completed)
+- **Actions**:
+  - **Fix 2 Revert**: In `backend/app/services/evaluation.py` (`compute_lead_time_breakdown`), completely removed the logic that reassigned lead times in [36, 42) into the 30-36h band for cutoffs >= 11:30. Lead-time bands are calculated strictly from raw `lead_time_hours = startTime - publishTime` of the selected forecast row using standard 6h bins without capping or reassignment.
+  - **Restored Lead-Time Counts**:
+    - Cutoff 12:00: 12-18h: 184, 18-24h: 186, 24-30h: 186, 30-36h: 186, 36-42h: 2, total 744.
+    - Cutoff 09:20: 12-18h: 62, 18-24h: 186, 24-30h: 186, 30-36h: 186, 36-42h: 124, total 744 (07:30 publish naturally yields leads up to 39.5h).
+  - **Confirmed Headline Metrics Invariant**:
+    - 09:20: N=744, MAE=2,022.47 MW, RMSE=2,497.41 MW, Bias=+1,745.94 MW, WAPE=17.92%, P90=4,154.4 MW.
+    - 12:00: N=744, MAE=1,883.98 MW, RMSE=2,350.33 MW, Bias=+1,685.27 MW, WAPE=16.69%, P90=3,767.7 MW.
+  - **Zero Fabrication Audit**:
+    - Verified against `snapshot.sqlite` and live Elexon BMRS API: on 2026-01-15, there was no 11:30 UTC WINDFOR publication; the next publication was 12:25:00 UTC; at 12:00 cutoff, delivery targets 2026-01-16 22:00 and 23:00 selected the 09:30 UTC publication with raw leads 36.5h and 37.5h.
+    - Verified database counts: 21,024 WINDFOR records (all minute :00, zero at :30), 1,776 FUELHH actuals (888 at :00, 888 at :30; 1,488 in Jan 2026), 4,321 negative lead rows excluded, snapshot SHA-256 `c9a0499151944a0cdf5e2ccf2f21eb97e07e998edd5fad0ca735543efcc6b007`, extraction timestamp `2026-10-25T19:33:30.226170+00:00`.
+    - Removed all reassignment explanations from codebase, UI, and documentation; replaced with verified raw fallback annotation.
+  - **Tests & Linters**:
+    - Updated `test_lead_time_bands_at_1200_and_0920` in `backend/tests/test_selection_and_evaluation.py` to assert restored raw 12:00 and 09:20 counts.
+    - Verified pytest (25/25 passed), ruff check/format (clean), npm test (6/6 passed), and npm run build (clean).
 
 
 

@@ -31,13 +31,14 @@
 
 ---
 
-## 4. Negative Lead-Time Policy & Lead-Time Band Assignment
+## 4. Negative Lead-Time Policy & Lead-Time Band Derivation
 - The live Elexon WINDFOR dataset contains past intervals where `startTime < publishTime`.
 - **Policy**: All rows with `startTime < publishTime` are flagged and excluded from decision-time selection and error evaluation. Across January 2026 data, 4,321 negative lead-time rows were filtered.
 - **Lead-Time Definition**: `lead_time_hours = startTime - publishTime` of the actually selected forecast row for that interval.
-- **Lead-Time Band Assignment**:
-  - Binned into 6-hour bands: `0-6h`, `6-12h`, `12-18h`, `18-24h`, `24-30h`, `30-36h`, `36-42h`, `42-48h`, `48h+`.
-  - For day-ahead cutoffs &ge; 11:30 (e.g. 12:00), the scheduled day-ahead delivery horizon has a maximum band of 30-36h (11:30 publish &rarr; 23:00 delivery = 35.5h). When an intraday publication delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on 2026-01-15, when the midday publication was delayed to 12:25:00 UTC), delivery intervals at 22:00 (36.5h) and 23:00 (37.5h) are assigned to the terminal day-ahead band (30-36h) rather than an impossible &gt;36h band.
+- **Lead-Time Band Derivation & Verified Fallback Annotation**:
+  - Binned directly into standard 6-hour bins: `0-6h`, `6-12h`, `12-18h`, `18-24h`, `24-30h`, `30-36h`, `36-42h`, `42-48h`, `48h+`, without capping or reassignment.
+  - At cutoff 09:20, the `36-42h` band contains 124 intervals ($4 \text{ hours} \times 31 \text{ days}$), because selecting the 07:30 UTC publication naturally yields lead times up to 39.5h for delivery hours 20:00 to 23:00.
+  - At cutoff 12:00, the `36-42h` band contains exactly 2 intervals (12-18h: 184, 18-24h: 186, 24-30h: 186, 30-36h: 186, 36-42h: 2, total 744). On 2026-01-15, Elexon did not publish an 11:30 UTC revision (the next publication occurred at 12:25:00 UTC, as verified from snapshot and live BMRS data). Consequently, for delivery targets 2026-01-16 22:00 and 23:00, the cutoff-constrained selector fell back to the 09:30 UTC publication, giving exact raw lead times of 36.5h and 37.5h.
 
 ---
 

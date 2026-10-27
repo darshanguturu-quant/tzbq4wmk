@@ -148,7 +148,7 @@ def compute_lead_time_breakdown(
     if matched_df.empty:
         return []
 
-    # 6-hour bands
+    # 6-hour bands directly from raw lead_time_hours = startTime - publishTime
     df = matched_df.copy()
     bins = [0, 6, 12, 18, 24, 30, 36, 42, 48, 100]
     labels = [
@@ -165,25 +165,6 @@ def compute_lead_time_breakdown(
     df["lead_band"] = pd.cut(
         df["lead_time_hours"], bins=bins, labels=labels, right=False
     )
-
-    # Determine decision cutoff time
-    c_time = cutoff_time
-    if not c_time and "decision_cutoff" in df.columns and not df.empty:
-        first_cutoff = str(df["decision_cutoff"].iloc[0])
-        if "T" in first_cutoff:
-            c_time = first_cutoff.split("T")[1][:5]
-        elif len(first_cutoff) >= 5:
-            c_time = first_cutoff[:5]
-
-    # For day-ahead purchase decisions with cutoffs >= 11:30 (e.g. 12:00, 15:30), the maximum scheduled
-    # day-ahead delivery band is 30-36h (11:30 publish -> 23:00 delivery = 35.5h).
-    # When an intraday delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on
-    # 2026-01-15 when the midday publish was delayed to 12:25), delivery intervals at 22:00 (36.5h) and
-    # 23:00 (37.5h) spill into 36-42h solely due to publish timing. In day-ahead delivery evaluation,
-    # these intervals belong to the terminal day-ahead auction delivery band (30-36h).
-    if c_time and c_time >= "11:30":
-        mask = (df["lead_band"] == "36-42h") & (df["lead_time_hours"] < 42)
-        df.loc[mask, "lead_band"] = "30-36h"
 
     results = []
     for band in labels:

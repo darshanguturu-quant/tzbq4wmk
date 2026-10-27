@@ -403,9 +403,10 @@ def test_real_snapshot_selection_and_metrics():
 
 def test_lead_time_bands_at_1200_and_0920():
     """
-    Verifies Fix 2:
-    - At cutoff 12:00, the 36-42h band is absent (0 count), and bands sum to 744.
-    - At cutoff 09:20, the 36-42h band contains 124 intervals, and bands sum to 744.
+    Verifies lead time band counts derived strictly from raw startTime - publishTime:
+    - At cutoff 12:00, 36-42h contains N=2 (targets 22:00 and 23:00 on 2026-01-16 from 09:30 publish),
+      30-36h contains N=186, 24-30h contains N=186, 18-24h contains N=186, 12-18h contains N=184, total 744.
+    - At cutoff 09:20, 36-42h contains N=124 (07:30 publish naturally leads up to 39.5h), total 744.
     """
     from backend.app.repositories.snapshot import get_snapshot_repo
     from backend.app.services.evaluation import compute_performance_summary
@@ -419,16 +420,25 @@ def test_lead_time_bands_at_1200_and_0920():
         fc_df, act_df, "2026-01-01", "2026-01-31", "12:00"
     )
     bands_12 = {b["lead_time_band"]: b["count"] for b in perf_12["lead_time_breakdown"]}
-    assert "36-42h" not in bands_12
-    assert sum(bands_12.values()) == 744
-    assert bands_12.get("30-36h") == 188
     assert bands_12.get("12-18h") == 184
+    assert bands_12.get("18-24h") == 186
+    assert bands_12.get("24-30h") == 186
+    assert bands_12.get("30-36h") == 186
+    assert bands_12.get("36-42h") == 2
+    assert sum(bands_12.values()) == 744
+    assert perf_12["headline"]["mae_mw"] == 1883.98
+    assert perf_12["headline"]["rmse_mw"] == 2350.33
+    assert perf_12["headline"]["bias_mw"] == 1685.27
 
     # Cutoff 09:20
     perf_09 = compute_performance_summary(
         fc_df, act_df, "2026-01-01", "2026-01-31", "09:20"
     )
     bands_09 = {b["lead_time_band"]: b["count"] for b in perf_09["lead_time_breakdown"]}
+    assert bands_09.get("12-18h") == 62
+    assert bands_09.get("18-24h") == 186
+    assert bands_09.get("24-30h") == 186
+    assert bands_09.get("30-36h") == 186
     assert bands_09.get("36-42h") == 124
     assert sum(bands_09.values()) == 744
     assert perf_09["headline"]["mae_mw"] == 2022.47
