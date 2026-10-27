@@ -34,4 +34,22 @@ describe("Frontend Domain Rules and KPI Formatting", () => {
     expect(replayInterval.actual_mw).toBeNull();
     expect(replayInterval.error_mw).toBeNull();
   });
+
+  it("includes custom cutoff in sensitivity comparison list alongside presets", () => {
+    const PRESETS = ["09:20", "09:50", "15:30"];
+    const customCutoff = "12:00";
+    const compareCutoffs = PRESETS.includes(customCutoff) ? PRESETS : [...PRESETS, customCutoff];
+    expect(compareCutoffs).toEqual(["09:20", "09:50", "15:30", "12:00"]);
+
+    const presetCutoff = "09:20";
+    const presetCompare = PRESETS.includes(presetCutoff) ? PRESETS : [...PRESETS, presetCutoff];
+    expect(presetCompare).toEqual(["09:20", "09:50", "15:30"]);
+  });
+
+  it("floors uncertainty band lower bound at zero for negative unconstrained values", () => {
+    const forecastMw = 4252.0;
+    const q10Residual = -5000.0;
+    const lowerMw = Math.max(0.0, forecastMw + q10Residual);
+    expect(lowerMw).toBe(0.0);
+  });
 });

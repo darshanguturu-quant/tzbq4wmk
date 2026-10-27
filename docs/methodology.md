@@ -44,7 +44,7 @@ $$e_t = f_t - y_t \quad (\text{MW})$$
 $$\text{MAE} = \frac{1}{N} \sum_{t=1}^N |e_t| \quad (\text{MW})$$
 Measures the expected average error magnitude regardless of direction.
 
-### 2.3 Root Mean Squared Error (RMSE)
+### 2.3 Root Mean Square Error (RMSE)
 $$\text{RMSE} = \sqrt{\frac{1}{N} \sum_{t=1}^N e_t^2} \quad (\text{MW})$$
 Applies quadratic weighting to highlight the risk of severe outlier forecast misses.
 
@@ -65,14 +65,15 @@ Where $N_{\text{expected}} = 24 \times \text{number of delivery days}$. Missing 
 
 ---
 
-## 3. Leak-Free Empirical Uncertainty Band
+## 3. Leak-Free Empirical Uncertainty Band & 0 MW Flooring Rule
 
 To provide trading desks with an actionable range of potential outcomes without fabricating probabilistic distributions:
 1. **Residual Definition**: Residual $r = y - f = -e$ (MW).
 2. **Temporal Lookback Isolation**: For a decision on date $D$ at cutoff $c$, usable residuals are derived strictly from delivery dates $\le D - 1$ (which completed prior to $c$ on date $D$). Furthermore, each past delivery interval must have been evaluated under the **exact same cutoff rule** for its own decision date.
-3. **Band Calculation**:
+3. **Band Calculation & Physical Flooring**:
    $$\text{Lower Bound} = \max(0, f_t + Q_{10}(r))$$
    $$\text{Upper Bound} = f_t + Q_{90}(r)$$
+   *Flooring Justification*: Because WINDFOR has a strong positive bias (+1,745 MW), empirical residuals are predominantly negative ($Q_{10} \approx -4,500$ to $-5,000$ MW). Whenever $f_t < |Q_{10}(r)|$, the unconstrained value is negative. Because physical wind generation cannot be negative ($Generation \ge 0\text{ MW}$), the lower bound is explicitly floored at **0.0 MW**.
 4. **Sample Threshold ($N \ge \text{MIN\_BAND\_SAMPLES}$)**: If the usable history contains fewer than 48 hourly points, no band is drawn, and the UI displays *"Insufficient history for an uncertainty range"*.
 5. **Transparency**: The band is clearly documented as an empirical error band based on past residuals, not an official Elexon probabilistic forecast.
 

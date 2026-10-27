@@ -9,30 +9,35 @@
 ---
 
 ## 2. Decision Gate: Evaluation Interval Policy
-- **Empirical Observation (Phase 0)**:
-  - WINDFOR forecasts are strictly hourly (`startTime` has `minute=0` for 100% of rows). No `:30` forecasts are emitted by Elexon.
-  - FUELHH actuals are half-hourly (48 intervals per day, covering `:00` and `:30`).
+- **Empirical Observation (Phase 0 & Snapshot Audit)**:
+  - WINDFOR forecasts: strictly hourly (`startTime` has `minute=0` for 100% of the 21,024 records in `data/snapshot.sqlite`). Exactly 0 records exist with `minute=30`.
+  - FUELHH actuals: half-hourly (1,776 records in bundle, exactly 888 at `:00` and 888 at `:30`; exactly 48 intervals per delivery day).
 - **Policy Decision**:
-  - **Exact Hourly Match**: Evaluation is performed strictly on exact `startTime` matches (the 24 hourly timestamps `:00` each delivery day).
-  - **No Synthetic Interpolation**: We do NOT interpolate, average, or forward-fill forecasts for `:30` intervals. Missing forecasts remain missing.
-  - **Expected Intervals**: Exactly 24 hourly intervals per delivery day (`00:00`, `01:00`, ..., `23:00` UTC). Coverage is defined as `matched_intervals / 24`.
+  - **Exact Hourly Match**: Evaluation is performed strictly on exact `startTime` matches (the 24 hourly timestamps `:00` each delivery day, totaling 744 matched pairs across January 2026, 100.0% coverage).
+  - **No Synthetic Interpolation**: True 30-minute matched evaluation is impossible without synthetic interpolation or zero-filling. In accordance with the core domain rules, we do NOT interpolate, average, or forward-fill forecasts for `:30` intervals. Missing forecasts remain missing, and the 744 half-hourly (`:30`) actuals in January 2026 remain unmatched.
+  - **Expected Intervals**: Exactly 24 hourly intervals per delivery day (`00:00`, `01:00`, ..., `23:00` UTC; 744 intervals for January 2026). Coverage is defined as `matched_intervals / 24`.
 
 ---
 
-## 3. Decision Cutoff Presets
+## 3. Decision Cutoff Presets & Sensitivity Comparison
 - Presets provided (all GMT/UTC):
   - **EPEX GB Hourly Day-Ahead**: `09:20` (Default)
   - **N2EX (Nord Pool) Day-Ahead**: `09:50`
   - **EPEX GB Half-Hourly Day-Ahead**: `15:30`
-  - **Custom Time**: Any user-specified `HH:MM`.
+  - **Custom Time**: Any user-specified `HH:MM` (e.g. `12:00`).
 - **Disclaimer**: *"Illustrative GB auction gate closure. Confirm your organisation's actual internal trading deadline."*
 - **Cutoff Rule**: Only forecasts with `publishTime <= cutoff_time` on the decision date are eligible. A forecast published at `09:20:00` is eligible for a `09:20` cutoff; a forecast at `09:20:01` is not.
+- **Sensitivity Comparison Table**: Dynamically evaluates the active cutoff (whether preset or custom) alongside the standard presets strictly on the common intersection of matched intervals (744 common intervals across January 2026). Active custom cutoffs appear as their own clearly labelled `(Active)` row without modifying preset values.
 
 ---
 
-## 4. Negative Lead-Time Policy
+## 4. Negative Lead-Time Policy & Lead-Time Band Assignment
 - The live Elexon WINDFOR dataset contains past intervals where `startTime < publishTime`.
 - **Policy**: All rows with `startTime < publishTime` are flagged and excluded from decision-time selection and error evaluation. Across January 2026 data, 4,321 negative lead-time rows were filtered.
+- **Lead-Time Definition**: `lead_time_hours = startTime - publishTime` of the actually selected forecast row for that interval.
+- **Lead-Time Band Assignment**:
+  - Binned into 6-hour bands: `0-6h`, `6-12h`, `12-18h`, `18-24h`, `24-30h`, `30-36h`, `36-42h`, `42-48h`, `48h+`.
+  - For day-ahead cutoffs &ge; 11:30 (e.g. 12:00), the scheduled day-ahead delivery horizon has a maximum band of 30-36h (11:30 publish &rarr; 23:00 delivery = 35.5h). When an intraday publication delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on 2026-01-15, when the midday publication was delayed to 12:25:00 UTC), delivery intervals at 22:00 (36.5h) and 23:00 (37.5h) are assigned to the terminal day-ahead band (30-36h) rather than an impossible &gt;36h band.
 
 ---
 
@@ -46,16 +51,20 @@
 - Error: $e = \text{forecast} - \text{actual}$ in Megawatts (MW).
   - Positive $e > 0$: Wind **overforecast** (realized wind generation was less than forecast).
   - Negative $e < 0$: Wind **underforecast** (realized wind generation was greater than forecast).
+- Metric: Root Mean Square Error (RMSE), defined as $\text{RMSE} = \sqrt{\frac{1}{N} \sum e^2}$.
 - Residual for uncertainty: $r = \text{actual} - \text{forecast} = -e$.
 
 ---
 
-## 7. Uncertainty Band Policy
+## 7. Uncertainty Band Policy & 0 MW Flooring Rule
 - Leak-free rolling empirical residual distribution:
   - For a decision date $D$ at cutoff $c$, usable residuals are derived strictly from delivery days $< D$ evaluated under the exact same cutoff rule.
   - Requires minimum sample size $N \ge \text{MIN\_BAND\_SAMPLES}$ (default 48 matched hourly intervals, i.e., 2 prior days).
   - If insufficient history is available, the UI displays *"Insufficient history for an uncertainty range"*.
   - Clearly disclaimed as an empirical residual-based range, not an official Elexon probabilistic forecast.
+- **Percentile Formula & Physical Flooring Rule**:
+  $$\text{lower} = \max(0.0, \text{forecast} + Q_{10}(r)), \quad \text{upper} = \text{forecast} + Q_{90}(r)$$
+  - *Flooring Justification*: Because WINDFOR has a strong positive bias (+1,745 MW), empirical residuals $r = \text{actual} - \text{forecast}$ are predominantly negative ($Q_{10} \approx -4,500$ to $-5,000$ MW). For moderate-to-low forecast hours where $\text{forecast} < |Q_{10}(r)|$, the unconstrained bound is negative. Because physical wind power generation cannot be negative ($Generation \ge 0\text{ MW}$), the lower bound is explicitly floored at **0.0 MW**.
 - **Commercial Usage**: The empirical residual band already accounts for the observed structural gap between WINDFOR and FUELHH (+1,745 MW), providing a dynamic empirical confidence interval without requiring arbitrary fixed haircuts.
 
 ---

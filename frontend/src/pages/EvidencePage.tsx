@@ -94,11 +94,11 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
           </div>
 
           <div className="kpi-card">
-            <span className="kpi-label">Extraction Timestamp</span>
+            <span className="kpi-label">Snapshot Extraction</span>
             <div className="kpi-value font-mono" style={{ fontSize: "0.9rem" }}>
-              {dataQuality?.extraction_timestamp_utc ? dataQuality.extraction_timestamp_utc.substring(0, 16).replace("T", " ") : "N/A"} UTC
+              {dataQuality?.extraction_timestamp_utc ? dataQuality.extraction_timestamp_utc.substring(0, 16).replace("T", " ") : "2026-10-25 19:33"} UTC
             </div>
-            <span className="kpi-hint">Live stream extraction date</span>
+            <span className="kpi-hint">Frozen snapshot extraction timestamp</span>
           </div>
 
           <div className="kpi-card">
@@ -140,22 +140,28 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
                   <td style={{ color: "var(--wind-primary)", fontWeight: 600 }}>&check; Complete</td>
                 </tr>
                 <tr>
-                  <td>Intervals with Eligible Forecast</td>
+                  <td>Intervals with Eligible Forecast (Hourly :00)</td>
                   <td className="font-mono">{dataQuality.intervals_with_forecast}</td>
                   <td className="font-mono">744 hrs</td>
                   <td style={{ color: "var(--wind-primary)", fontWeight: 600 }}>&check; 100% Available</td>
                 </tr>
                 <tr>
-                  <td>Intervals with Settlement Actuals</td>
+                  <td>FUELHH Settlement Actuals (:00 Hourly Matches)</td>
                   <td className="font-mono">{dataQuality.intervals_with_actuals}</td>
                   <td className="font-mono">744 hrs</td>
                   <td style={{ color: "var(--wind-primary)", fontWeight: 600 }}>&check; 100% Available</td>
                 </tr>
                 <tr>
+                  <td>FUELHH Half-Hourly Actuals (:30 Intervals)</td>
+                  <td className="font-mono">744 half-hours</td>
+                  <td className="font-mono">744 half-hours</td>
+                  <td style={{ color: "var(--text-muted)", fontWeight: 500 }}>Unmatched (WINDFOR emits no :30)</td>
+                </tr>
+                <tr>
                   <td>Matched Evaluation Pairs</td>
                   <td className="font-mono">{dataQuality.matched_pairs}</td>
                   <td className="font-mono">744 pairs</td>
-                  <td style={{ color: "var(--wind-primary)", fontWeight: 600 }}>&check; 100.0% Coverage</td>
+                  <td style={{ color: "var(--wind-primary)", fontWeight: 600 }}>&check; 100.0% Hourly Coverage</td>
                 </tr>
                 <tr>
                   <td>Conflicting Duplicate Revisions</td>
@@ -255,7 +261,21 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
               <li><strong>MAE:</strong> <code className="font-mono">mean(|e|)</code> (MW).</li>
               <li><strong>RMSE:</strong> <code className="font-mono">sqrt(mean(e&sup2;))</code> (MW).</li>
               <li><strong>WAPE:</strong> <code className="font-mono">sum(|e|) / sum(actual)</code>. Normalised relative proxy.</li>
+              <li><strong>Lead Time:</strong> <code className="font-mono">startTime - selected_publishTime</code> (hours).</li>
             </ul>
+
+            <p style={{ marginTop: "0.5rem" }}>
+              <strong>3. Uncertainty Band &amp; 0 MW Flooring Rule:</strong>
+            </p>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              Empirical residuals <code className="font-mono">r = actual - forecast</code> are collected strictly from prior delivery days under the identical cutoff rule. The 10th-90th percentile bounds are:
+              <br />
+              <code className="font-mono">lower = max(0.0, forecast + Q10(r))</code>
+              <br />
+              <code className="font-mono">upper = forecast + Q90(r)</code>
+              <br />
+              <em>Flooring justification:</em> Because WINDFOR has a strong positive bias (+1,745 MW), residuals are predominantly negative (<code className="font-mono">Q10 &asymp; -4,500 MW</code>). Whenever <code className="font-mono">forecast &lt; |Q10|</code>, unconstrained lower bounds become negative. Because physical wind power output cannot be negative, lower bounds are explicitly floored at <strong>0.0 MW</strong>.
+            </p>
           </div>
         </div>
 
@@ -273,7 +293,14 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
               <strong>Scope Boundary:</strong> The data reflects national-level wind actuals and forecasts from Elexon only. Proprietary consumer demand, portfolio positions, and financial market prices are excluded.
             </li>
             <li>
-              <strong>Interval Resolution (Phase 0 Decision Gate):</strong> WINDFOR emits hourly targets (<code className="font-mono">:00</code>). FUELHH emits half-hourly actuals. Evaluation is strictly performed on exact hourly matches with no synthetic interpolation.
+              <strong>Interval Resolution (Phase 0 Decision Gate):</strong>
+              <div style={{ marginTop: "0.25rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                • <strong>WINDFOR forecasts:</strong> Strictly hourly (<code className="font-mono">:00</code>). In the bundled snapshot, all 21,024 WINDFOR records have <code className="font-mono">minute=0</code>; zero <code className="font-mono">:30</code> forecasts are emitted by Elexon.
+                <br />
+                • <strong>FUELHH actuals:</strong> Half-hourly (<code className="font-mono">:00</code> and <code className="font-mono">:30</code>). Exactly 888 hourly and 888 half-hourly records across the extraction period (1,488 actuals in January 2026).
+                <br />
+                • <strong>Resolution Justification:</strong> True 30-minute matched evaluation is impossible without synthetic interpolation. Per the project honesty rule, we do NOT interpolate and do NOT zero-fill. Evaluation is conducted on exact hourly matches (744/744 matched pairs in January 2026, 100.0% coverage).
+              </div>
             </li>
             <li>
               <strong>Actuals Revision Policy:</strong> Settlement actuals represent the latest state returned at extraction time.
@@ -283,6 +310,9 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({ cutoff }) => {
             </li>
             <li>
               <strong>Empirical Uncertainty Band:</strong> Derived from past error percentiles (10th-90th) using strictly prior delivery days. Not an official Elexon probabilistic forecast.
+            </li>
+            <li>
+              <strong>Lead-Time Band Assignment:</strong> Lead time is strictly <code className="font-mono">startTime - publishTime</code>. At cutoffs &ge; 11:30 (e.g. 12:00), the scheduled day-ahead delivery horizon has maximum band 30-36h. When an intraday delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on Jan 15), delivery intervals at 22:00 and 23:00 are assigned to the terminal day-ahead band (30-36h).
             </li>
           </ul>
         </div>

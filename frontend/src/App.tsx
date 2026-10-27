@@ -76,8 +76,8 @@ export const App: React.FC = () => {
 
         {/* Status Pill */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--wind-primary)", boxShadow: "0 0 8px var(--wind-primary)" }}></span>
-          <span>January 2026 Live Snapshot</span>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--cyan-accent)", opacity: 0.85 }}></span>
+          <span>January 2026 Snapshot</span>
         </div>
       </header>
 

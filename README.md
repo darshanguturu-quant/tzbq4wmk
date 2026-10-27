@@ -195,10 +195,16 @@ cd frontend && npm run build
 
 ## Key Assumptions & Limitations
 
-1. **Resolution Matching (Phase 0 Decision Gate):** WINDFOR forecasts are strictly hourly (`:00` minute intervals only); FUELHH actuals are half-hourly. As resolved in Phase 0, evaluation is strictly conducted on **exact hourly matches** without synthetic interpolation.
-2. **Auction Gate Closures:** Presets (EPEX 09:20, N2EX 09:50, EPEX HH 15:30 GMT) represent illustrative market milestones. Trading desks must confirm their internal execution deadlines.
-3. **No Zero-Filling:** Missing forecasts remain `null` and penalize coverage rather than artificially distorting error metrics.
-4. **Empirical Residual Band:** The 10th-90th percentile band reflects historical past forecast errors. It is not an official Elexon probabilistic forecast.
+1. **Resolution Matching (Phase 0 Decision Gate):**
+   - **WINDFOR Forecasts:** Sourced from Elexon BMRS `GET /datasets/WINDFOR/stream`. Emits strictly hourly forecasts (`:00` minute timestamps). In the bundled January 2026 snapshot (`data/snapshot.sqlite`), all 21,024 records have `minute = 0`; exactly 0 records exist at `:30`.
+   - **FUELHH Actuals:** Sourced from Elexon BMRS `GET /datasets/FUELHH/stream` (`fuelType=WIND`). Emits half-hourly outturn (48 settlement periods per day, 888 hourly `:00` records and 888 half-hourly `:30` records in the snapshot bundle; 1,488 actuals in January 2026).
+   - **Resolution Justification:** True 30-minute matched evaluation is impossible without inventing or interpolating data. In strict accordance with the project honesty rule, we do **NOT** synthetically interpolate missing forecasts and do **NOT** zero-fill missing intervals. Matched evaluation is performed strictly on exact `:00` hourly timestamps (31 delivery days &times; 24h = 744 expected intervals, 744 matched pairs, 100.0% coverage). The remaining 744 `:30` actuals cannot be matched against non-existent forecasts and remain unmatched.
+2. **Auction Gate Closures & Sensitivity Comparison:** Presets (EPEX 09:20, N2EX 09:50, EPEX HH 15:30 GMT) represent illustrative market milestones. Trading desks can evaluate any custom cutoff (e.g. 12:00); the sensitivity comparison table dynamically evaluates active custom cutoffs alongside presets on the identical common matched intervals (744 hours).
+3. **Lead-Time Bands & Fallback Day-Ahead Assignment:** Lead time is strictly computed as `startTime - publishTime` of the actually selected forecast row for that interval. At cutoffs &ge; 11:30 (e.g. 12:00), the scheduled day-ahead delivery horizon has a maximum band of 30-36h (11:30 publish &rarr; 23:00 delivery = 35.5h). When an intraday publication delay at Elexon forces fallback selection to an earlier revision (e.g. 09:30 on 2026-01-15, when the midday publication was delayed to 12:25:00 UTC), delivery intervals at 22:00 (36.5h) and 23:00 (37.5h) are assigned to the terminal day-ahead band (30-36h) rather than an impossible &gt;36h band.
+4. **No Zero-Filling:** Missing forecasts remain `null` and penalize coverage rather than artificially distorting error metrics.
+5. **Empirical Residual Band & 0 MW Flooring Rule:** The 10th-90th percentile band reflects historical past forecast errors ($r = \text{actual} - \text{forecast}$) evaluated under the exact same cutoff rule on prior delivery days:
+   $$\text{lower} = \max(0.0, \text{forecast} + Q_{10}(r)), \quad \text{upper} = \text{forecast} + Q_{90}(r)$$
+   Because WINDFOR has a large systematic positive bias (+1,745 MW), empirical residuals are heavily negative ($Q_{10} \approx -4,500$ to $-5,000$ MW). Whenever $\text{forecast} < |Q_{10}(r)|$, the unconstrained bound is negative. Because physical wind generation cannot be negative ($Generation \ge 0\text{ MW}$), the lower bound is explicitly floored at **0.0 MW**.
 *(Full details in [docs/assumptions.md](docs/assumptions.md)).*
 
 ---

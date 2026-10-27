@@ -19,9 +19,12 @@ export const PerformancePage: React.FC<PerformancePageProps> = ({ cutoff }) => {
     setLoading(true);
     setError(null);
 
+    const PRESETS = ["09:20", "09:50", "15:30"];
+    const compareCutoffs = PRESETS.includes(cutoff) ? PRESETS : [...PRESETS, cutoff];
+
     Promise.all([
       fetchPerformance(cutoff, "2026-01-01", "2026-01-31"),
-      fetchPerformanceCompare(["09:20", "09:50", "15:30"], "2026-01-01", "2026-01-31"),
+      fetchPerformanceCompare(compareCutoffs, "2026-01-01", "2026-01-31"),
     ])
       .then(([perf, comps]) => {
         if (isMounted) {
@@ -106,7 +109,7 @@ export const PerformancePage: React.FC<PerformancePageProps> = ({ cutoff }) => {
         </div>
 
         <div className="kpi-card">
-          <span className="kpi-label">Root Mean Squared (RMSE)</span>
+          <span className="kpi-label">Root Mean Square Error</span>
           <div className="kpi-value">
             {headline.rmse_mw?.toLocaleString() ?? "N/A"}
             <span className="kpi-unit">MW</span>
@@ -198,7 +201,8 @@ export const PerformancePage: React.FC<PerformancePageProps> = ({ cutoff }) => {
                       {c.cutoff_time === "09:20" && "EPEX GB Hourly Day-Ahead"}
                       {c.cutoff_time === "09:50" && "N2EX (Nord Pool) Day-Ahead"}
                       {c.cutoff_time === "15:30" && "EPEX GB Half-Hourly Day-Ahead"}
-                      {isSelected && <span style={{ color: "var(--wind-primary)", marginLeft: "6px" }}>(Active)</span>}
+                      {!["09:20", "09:50", "15:30"].includes(c.cutoff_time) && `Custom Cutoff (${c.cutoff_time})`}
+                      {isSelected && <span style={{ color: "var(--wind-primary)", marginLeft: "6px", fontWeight: 700 }}>(Active)</span>}
                     </td>
                     <td className="font-mono">{c.cutoff_time}</td>
                     <td className="font-mono">{c.n_common_intervals}</td>
